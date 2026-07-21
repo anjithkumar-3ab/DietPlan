@@ -64,7 +64,6 @@ async function renderSettings(container) {
           <span class="badge badge-info">📊 BMI & BMR Calculation</span>
           <span class="badge badge-warning">🍎 Food Database</span>
           <span class="badge badge-success">⚠️ Allergy Filters</span>
-          <span class="badge badge-info">📈 Progress Tracking</span>
         </div>
       </div>
     </div>

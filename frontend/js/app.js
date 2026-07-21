@@ -5,7 +5,7 @@
 
 // ── State ──
 
-let currentPage = 'dashboard';
+let currentPage = 'diet_planner';
 let sidebarOpen = false;
 
 // ── Navigation ──
@@ -32,7 +32,7 @@ async function renderPage(page) {
   // Show loading state
   container.innerHTML = '<div class="spinner"></div>';
 
-  // Each page has a render function: renderDashboard(), renderProfile(), etc.
+  // Each page has a render function: renderDietPlanner(), renderMealHistory(), renderSettings()
   const renderFn = window[`render${camelCase(page)}`];
 
   if (typeof renderFn === 'function') {
@@ -44,7 +44,7 @@ async function renderPage(page) {
         <div class="empty-state">
           <h3>Failed to load page</h3>
           <p>${error.message}</p>
-          <button class="btn btn-primary" onclick="navigate('dashboard')">Back to Dashboard</button>
+          <button class="btn btn-primary" onclick="navigate('diet_planner')">Go to Diet Planner</button>
         </div>`;
     }
   } else {
@@ -52,7 +52,7 @@ async function renderPage(page) {
       <div class="empty-state">
         <h3>Page Not Found</h3>
         <p>The page "${page}" does not exist.</p>
-        <button class="btn btn-primary" onclick="navigate('dashboard')">Go to Dashboard</button>
+        <button class="btn btn-primary" onclick="navigate('diet_planner')">Go to Diet Planner</button>
       </div>`;
   }
 }
@@ -191,14 +191,14 @@ function escHtml(str) {
 // ── Initialize ──
 
 document.addEventListener('DOMContentLoaded', () => {
-  renderPage('dashboard');
-  highlightNav('dashboard');
+  renderPage('diet_planner');
+  highlightNav('diet_planner');
 });
 
 // ── Handle browser back/forward ──
 
 window.addEventListener('popstate', (e) => {
-  const page = e.state?.page || 'dashboard';
+  const page = e.state?.page || 'diet_planner';
   renderPage(page);
   highlightNav(page);
 });

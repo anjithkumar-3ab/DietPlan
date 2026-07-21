@@ -139,6 +139,18 @@ function getSelectedPlanPills(groupId) {
   return Array.from(selected).map((p) => p.dataset.value);
 }
 
+// Toggle checkbox-pill selection on click
+function initPills(groupId) {
+  const container = document.getElementById(groupId);
+  if (!container) return;
+
+  container.querySelectorAll('.checkbox-pill').forEach((pill) => {
+    pill.addEventListener('click', () => {
+      pill.classList.toggle('selected');
+    });
+  });
+}
+
 async function generatePlan(event) {
   event.preventDefault();
 
