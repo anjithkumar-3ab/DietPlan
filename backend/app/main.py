@@ -66,11 +66,16 @@ async def lifespan(app: FastAPI):
         client.admin.command("ping")
         logger.info("MongoDB Atlas connection verified successfully")
     except PyMongoError as exc:
+<<<<<<< HEAD
         logger.warning(
             "MongoDB connection failed: %s. Server will start but database "
             "operations will fail until MongoDB is available.",
             exc,
         )
+=======
+        logger.critical("MongoDB connection failed: %s", exc)
+        raise RuntimeError("Database connection failed – aborting startup") from exc
+>>>>>>> aaaa19b7534d463414494a2051f6f1c583eb1cc7
 
     logger.info("All routers registered – application is ready")
 
@@ -115,6 +120,7 @@ ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Vite dev server (legacy)
     "http://localhost:3000",  # Alternate React dev server (legacy)
     "http://localhost:8501",  # Streamlit dev server
+<<<<<<< HEAD
     "http://localhost:5500",  # Live Server / static frontend
     "http://localhost:8080",  # Alternative static server
     "http://localhost:8001",  # Static file server
@@ -122,6 +128,8 @@ ALLOWED_ORIGINS = [
     "http://127.0.0.1:8080",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:8001",
+=======
+>>>>>>> aaaa19b7534d463414494a2051f6f1c583eb1cc7
 ]
 
 app.add_middleware(
