@@ -1,0 +1,1 @@
+"""NutriAI frontend components package."""
