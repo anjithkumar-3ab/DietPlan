@@ -1,5 +1,5 @@
 """
-NutriAI FastAPI Application.
+DietPlan FastAPI Application.
 
 AI-Based Personalized Diet Planning & Recommendation System.
 
@@ -21,6 +21,7 @@ from fastapi.responses import JSONResponse
 from pymongo.errors import PyMongoError
 
 from app.database.database import client, db
+from app.routes.dashboard import router as dashboard_router
 from app.routes.food import router as food_router
 from app.routes.profile import router as profile_router
 from app.routes.recommendation import router as recommendation_router
@@ -35,7 +36,7 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-logger = logging.getLogger("nutriai")
+logger = logging.getLogger("dietplan")
 
 # Quiet down noisy third-party loggers.
 logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
@@ -60,7 +61,7 @@ async def lifespan(app: FastAPI):
         - Log clean shutdown.
     """
     # --- Startup -----------------------------------------------------------
-    logger.info("NutriAI API v1.0.0 starting up ...")
+    logger.info("DietPlan API v1.0.0 starting up ...")
 
     try:
         client.admin.command("ping")
@@ -78,14 +79,14 @@ async def lifespan(app: FastAPI):
     yield
 
     # --- Shutdown ----------------------------------------------------------
-    logger.info("NutriAI API shutting down ...")
+    logger.info("DietPlan API shutting down ...")
     try:
         client.close()
         logger.info("MongoDB connection closed")
     except PyMongoError as exc:
         logger.warning("Error closing MongoDB connection: %s", exc)
 
-    logger.info("NutriAI API shutdown complete")
+    logger.info("DietPlan API shutdown complete")
 
 
 # ---------------------------------------------------------------------------
@@ -93,7 +94,7 @@ async def lifespan(app: FastAPI):
 # ---------------------------------------------------------------------------
 
 app = FastAPI(
-    title="NutriAI API",
+    title="DietPlan API",
     version="1.0.0",
     description=(
         "AI-Based Personalized Diet Planning & Recommendation System.  "
@@ -298,7 +299,7 @@ async def root() -> Dict[str, Any]:
         dict with application name, version, and status.
     """
     return {
-        "application": "NutriAI",
+        "application": "DietPlan",
         "version": "1.0.0",
         "status": "running",
     }
@@ -329,7 +330,7 @@ async def health_check() -> Dict[str, Any]:
     return {
         "status": "healthy" if db_status == "connected" else "degraded",
         "database": db_status,
-        "service": "NutriAI Backend",
+        "service": "DietPlan Backend",
     }
 
 
@@ -337,8 +338,9 @@ async def health_check() -> Dict[str, Any]:
 # Router registration
 # ---------------------------------------------------------------------------
 
+app.include_router(dashboard_router)
 app.include_router(profile_router)
 app.include_router(food_router)
 app.include_router(recommendation_router)
 
-logger.info("Routers registered: profile, food, recommendation")
+logger.info("Routers registered: dashboard, profile, food, recommendation")

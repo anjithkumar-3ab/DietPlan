@@ -1,5 +1,5 @@
 /**
- * NutriAI – API Layer
+ * DietPlan – API Layer
  * Communicates with the FastAPI backend via Fetch API.
  */
 
@@ -61,6 +61,18 @@ async function recommendationAPI() {
   };
 }
 
+// ── Dashboard API ──
+
+async function dashboardAPI() {
+  return {
+    getCharts: (recommendationId) =>
+      apiFetch('/dashboard/charts', {
+        method: 'POST',
+        body: JSON.stringify({ recommendation_id: recommendationId }),
+      }),
+  };
+}
+
 // ── Food API ──
 
 async function foodAPI() {
@@ -87,10 +99,11 @@ async function healthAPI() {
 
 let _profile = null;
 let _recommendation = null;
+let _dashboard = null;
 let _food = null;
 let _health = null;
 
-const NutriAPI = {
+const DietPlanAPI = {
   get profile() {
     if (!_profile) _profile = profileAPI();
     return _profile;
@@ -98,6 +111,10 @@ const NutriAPI = {
   get recommendation() {
     if (!_recommendation) _recommendation = recommendationAPI();
     return _recommendation;
+  },
+  get dashboard() {
+    if (!_dashboard) _dashboard = dashboardAPI();
+    return _dashboard;
   },
   get food() {
     if (!_food) _food = foodAPI();
@@ -108,3 +125,5 @@ const NutriAPI = {
     return _health;
   },
 };
+
+const NutriAPI = DietPlanAPI;

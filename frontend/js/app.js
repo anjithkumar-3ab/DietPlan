@@ -1,5 +1,5 @@
 /**
- * NutriAI – Main Application Router
+ * DietPlan – Main Application Router
  * Handles SPA navigation, sidebar state, toast notifications, and page lifecycle.
  */
 
@@ -172,9 +172,9 @@ function escHtml(str) {
 // ── Animation keyframes for toasts (injected once) ──
 
 (function injectKeyframes() {
-  if (document.getElementById('nutriai-keyframes')) return;
+  if (document.getElementById('dietplan-keyframes')) return;
   const style = document.createElement('style');
-  style.id = 'nutriai-keyframes';
+  style.id = 'dietplan-keyframes';
   style.textContent = `
     @keyframes slideInRight {
       from { transform: translateX(120%); opacity: 0; }

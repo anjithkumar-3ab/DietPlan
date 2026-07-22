@@ -1,5 +1,5 @@
 /**
- * NutriAI – Settings Page
+ * DietPlan – Settings Page
  * Theme toggle, about info, and backend status.
  */
 
@@ -27,9 +27,9 @@ async function renderSettings(container) {
           <p style="font-weight:600;">Theme</p>
           <p style="font-size:0.82rem;color:var(--text-muted);">Choose your preferred color theme</p>
         </div>
-        <div class="flex gap-1">
-          <button class="btn btn-sm ${currentTheme === 'dark' ? 'btn-primary' : 'btn-secondary'}" onclick="setTheme('dark')">🌙 Dark</button>
-          <button class="btn btn-sm ${currentTheme === 'light' ? 'btn-primary' : 'btn-secondary'}" onclick="setTheme('light')">☀️ Light</button>
+        <div class="flex gap-1 btn-group-theme">
+          <button class="btn btn-sm ${currentTheme === 'dark' ? 'btn-primary' : 'btn-secondary'}" data-theme="dark" onclick="setTheme('dark')">🌙 Dark</button>
+          <button class="btn btn-sm ${currentTheme === 'light' ? 'btn-primary' : 'btn-secondary'}" data-theme="light" onclick="setTheme('light')">☀️ Light</button>
         </div>
       </div>
     </div>
@@ -48,14 +48,14 @@ async function renderSettings(container) {
     <!-- About -->
     <div class="card mb-3">
       <div class="card-header">
-        <span class="card-title">About NutriAI</span>
+        <span class="card-title">About DietPlan</span>
       </div>
       <div style="font-size:0.9rem;color:var(--text-secondary);line-height:1.8;">
         <p><strong style="color:var(--text-primary);">Version:</strong> 1.0.0</p>
         <p><strong style="color:var(--text-primary);">Backend:</strong> FastAPI + MongoDB Atlas</p>
         <p><strong style="color:var(--text-primary);">Frontend:</strong> Vanilla HTML/CSS/JS</p>
         <p style="margin-top:12px;">
-          NutriAI is an AI-Based Personalized Diet Planning & Recommendation System.
+          DietPlan is an AI-Based Personalized Diet Planning & Recommendation System.
           It generates intelligent daily meal plans from a curated food database,
           respecting dietary preferences, allergies, and medical conditions.
         </p>
@@ -147,7 +147,7 @@ async function checkBackendStatus() {
       <div class="flex gap-2" style="margin-top:8px;">
         <span>✅ Backend: ${data.status || 'healthy'}</span>
         <span>🗄 Database: ${data.database || 'connected'}</span>
-        <span>🔗 Service: ${data.service || 'NutriAI Backend'}</span>
+        <span>🔗 Service: ${data.service || 'DietPlan Backend'}</span>
       </div>
     `;
   } catch {
@@ -195,7 +195,9 @@ function setTheme(theme) {
 
   showToast(`Theme switched to ${theme} mode`, 'info', 2000);
 
-  // Re-render settings to update buttons
-  const container = document.getElementById('mainContent');
-  renderSettings(container);
+  // Update button active states without re-rendering the full page
+  document.querySelectorAll('.btn-group-theme .btn').forEach(btn => {
+    btn.classList.toggle('btn-primary', btn.dataset.theme === theme);
+    btn.classList.toggle('btn-secondary', btn.dataset.theme !== theme);
+  });
 }

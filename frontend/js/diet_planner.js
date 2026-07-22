@@ -1,5 +1,5 @@
 /**
- * NutriAI – Diet Planner Page
+ * DietPlan – Diet Planner Page
  * Collect user parameters, call recommendation API, and display the meal plan.
  */
 
@@ -118,7 +118,10 @@ async function renderDietPlanner(container) {
       </form>
     </div>
 
-    <!-- Plan Result Area -->
+    <!-- Dashboard Result Area (hidden until plan is generated) -->
+    <div id="dietDashboard" class="hidden"></div>
+
+    <!-- Plan Result Area (legacy – kept for backward compatibility) -->
     <div id="planResult"></div>
   `;
 
@@ -180,9 +183,30 @@ async function generatePlan(event) {
 
     if (data?.success) {
       showToast('Diet plan generated successfully!', 'success');
+
+      // Hide the form with a smooth transition
+      const formCard = document.getElementById('planFormCard');
+      if (formCard) {
+        formCard.style.transition = 'all 0.4s ease';
+        formCard.style.opacity = '0';
+        formCard.style.transform = 'translateY(-20px)';
+        setTimeout(() => { formCard.style.display = 'none'; }, 400);
+      }
+
+      // Render the full interactive dashboard directly from the API response
+      const dashboardDiv = document.getElementById('dietDashboard');
+      if (dashboardDiv) {
+        dashboardDiv.classList.remove('hidden');
+        dashboardDiv.style.animation = 'dashFadeIn 0.6s ease forwards';
+        dashboardDiv.innerHTML = '';
+        // Pass the recommendation data directly (no separate API call)
+        renderDashboard(dashboardDiv, data);
+        // Scroll to dashboard
+        setTimeout(() => dashboardDiv.scrollIntoView({ behavior: 'smooth' }), 500);
+      }
+
+      // Also render legacy plan result for backward compatibility
       renderPlanResult(resultDiv, data);
-      // Scroll to result
-      resultDiv.scrollIntoView({ behavior: 'smooth' });
     } else {
       throw new Error(data?.message || 'Failed to generate plan');
     }

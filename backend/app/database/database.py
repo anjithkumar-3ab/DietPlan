@@ -8,7 +8,7 @@ _env_path = Path(__file__).resolve().parent.parent.parent / ".env"
 load_dotenv(_env_path)
 
 MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
-DATABASE_NAME = os.getenv("DATABASE_NAME", "nutriai")
+DATABASE_NAME = os.getenv("DATABASE_NAME", "dietplan")
 
 client = MongoClient(MONGODB_URI)
 

@@ -1,0 +1,455 @@
+/* ============================================================
+   Power BI Executive Diet Recommendation Dashboard CSS
+   ============================================================ */
+
+:root {
+  --pbi-bg: #0b0e17;
+  --pbi-card: #151b28;
+  --pbi-card-header: #1a2234;
+  --pbi-border: #232d42;
+  --pbi-border-hover: #3b82f6;
+  --pbi-text: #f8fafc;
+  --pbi-text-sub: #94a3b8;
+  --pbi-text-muted: #64748b;
+  
+  --pbi-yellow: #f59e0b;
+  --pbi-blue: #3b82f6;
+  --pbi-green: #10b981;
+  --pbi-red: #ef4444;
+  --pbi-purple: #8b5cf6;
+  --pbi-cyan: #06b6d4;
+  --pbi-orange: #f97316;
+
+  --pbi-radius: 8px;
+  --pbi-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+  --pbi-font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/* ── Container Layout for 1920x1080 (Single Screen Viewport) ── */
+.pbi-dashboard-wrapper {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  font-family: var(--pbi-font);
+  color: var(--pbi-text);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--pbi-bg);
+  border-radius: var(--pbi-radius);
+}
+
+@media screen and (min-width: 1200px) and (min-height: 720px) {
+  .pbi-dashboard-wrapper {
+    height: calc(100vh - 40px);
+    max-height: calc(100vh - 40px);
+    overflow: hidden;
+  }
+}
+
+/* Make main content container tight when containing dashboard */
+.main-content:has(.pbi-dashboard-wrapper) {
+  padding: 12px 16px !important;
+}
+
+/* ── HEADER ── */
+.pbi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(90deg, #151b28 0%, #1c2538 100%);
+  border: 1px solid var(--pbi-border);
+  border-left: 4px solid var(--pbi-blue);
+  border-radius: var(--pbi-radius);
+  padding: 10px 16px;
+  flex-shrink: 0;
+}
+
+.pbi-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pbi-brand-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--pbi-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pbi-brand-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.pbi-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--pbi-text);
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.pbi-subtitle {
+  font-size: 0.72rem;
+  color: var(--pbi-text-sub);
+  margin: 0;
+}
+
+.pbi-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pbi-header-chip {
+  background: var(--pbi-card-header);
+  border: 1px solid var(--pbi-border);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chip-label {
+  color: var(--pbi-text-sub);
+}
+
+.chip-val {
+  color: var(--pbi-text);
+  font-weight: 600;
+}
+
+.chip-val.highlight {
+  color: var(--pbi-yellow);
+}
+
+.pbi-header-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pbi-header-badge.normal { background: rgba(16, 185, 129, 0.2); color: var(--pbi-green); border: 1px solid var(--pbi-green); }
+.pbi-header-badge.underweight { background: rgba(59, 130, 246, 0.2); color: var(--pbi-blue); border: 1px solid var(--pbi-blue); }
+.pbi-header-badge.overweight { background: rgba(245, 158, 11, 0.2); color: var(--pbi-yellow); border: 1px solid var(--pbi-yellow); }
+.pbi-header-badge.obese { background: rgba(239, 68, 68, 0.2); color: var(--pbi-red); border: 1px solid var(--pbi-red); }
+
+.pbi-btn {
+  background: var(--pbi-card-header);
+  border: 1px solid var(--pbi-border);
+  color: var(--pbi-text);
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pbi-btn:hover {
+  background: var(--pbi-border);
+  border-color: var(--pbi-blue);
+}
+
+/* ── ROW 1: 6 KPI CARDS ── */
+.pbi-row-kpi {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.pbi-kpi-card {
+  background: var(--pbi-card);
+  border: 1px solid var(--pbi-border);
+  border-radius: var(--pbi-radius);
+  padding: 10px 14px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+  box-shadow: var(--pbi-shadow);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.pbi-kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.pbi-kpi-card.yellow::before { background: var(--pbi-yellow); }
+.pbi-kpi-card.orange::before { background: var(--pbi-orange); }
+.pbi-kpi-card.purple::before { background: var(--pbi-purple); }
+.pbi-kpi-card.green::before { background: var(--pbi-green); }
+.pbi-kpi-card.cyan::before { background: var(--pbi-cyan); }
+.pbi-kpi-card.blue::before { background: var(--pbi-blue); }
+
+.pbi-kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.pbi-kpi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pbi-kpi-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--pbi-text-sub);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pbi-kpi-icon {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.pbi-kpi-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--pbi-text);
+  line-height: 1.1;
+  margin: 4px 0 2px;
+  letter-spacing: -0.5px;
+}
+
+.pbi-kpi-unit {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--pbi-text-sub);
+}
+
+.pbi-kpi-sub {
+  font-size: 0.68rem;
+  color: var(--pbi-text-muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+/* ── CARD & CHART BASE STYLES ── */
+.pbi-card {
+  background: var(--pbi-card);
+  border: 1px solid var(--pbi-border);
+  border-radius: var(--pbi-radius);
+  box-shadow: var(--pbi-shadow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.pbi-card-title-bar {
+  background: var(--pbi-card-header);
+  border-bottom: 1px solid var(--pbi-border);
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--pbi-text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.pbi-badge-sm {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--pbi-blue);
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.pbi-chart-box {
+  flex: 1;
+  width: 100%;
+  min-height: 0; /* Critical for flex container auto-sizing */
+}
+
+/* ── ROW 2: 3 COLUMNS (40% - 30% - 30%) ── */
+.pbi-row-charts-3 {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+}
+
+.pbi-col-40 { flex: 4; min-width: 0; }
+.pbi-col-30 { flex: 3; min-width: 0; }
+
+/* ── BOTTOM SECTION: LEFT (Meal Bar + Table) | RIGHT (Nutrition Balance Radar) ── */
+.pbi-bottom-section {
+  display: flex;
+  gap: 10px;
+  flex: 2.2;
+  min-height: 0;
+}
+
+.pbi-left-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.pbi-left-col .pbi-card:first-child {
+  flex: 1;
+  min-height: 0;
+}
+
+.pbi-left-col .pbi-card:last-child {
+  flex: 1.35; /* Give Meal Recommendation Table enough vertical space */
+  min-height: 0;
+}
+
+.pbi-right-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.pbi-full-height {
+  height: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── MEAL RECOMMENDATION TABLE ── */
+.pbi-table-wrapper {
+  flex: 1;
+  overflow: hidden; /* Completely remove scrollbars */
+  padding: 2px 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.pbi-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.72rem;
+  text-align: left;
+  table-layout: fixed;
+}
+
+.pbi-table th {
+  background: var(--pbi-card-header);
+  color: var(--pbi-text-sub);
+  font-weight: 700;
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--pbi-border);
+  text-transform: uppercase;
+  font-size: 0.64rem;
+  letter-spacing: 0.5px;
+}
+
+.pbi-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid rgba(35, 45, 66, 0.5);
+  color: var(--pbi-text);
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pbi-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.pbi-table tbody tr:hover {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.pbi-meal-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  font-size: 0.72rem;
+}
+
+.pbi-meal-tag.breakfast { color: var(--pbi-yellow); }
+.pbi-meal-tag.lunch { color: var(--pbi-green); }
+.pbi-meal-tag.snack { color: var(--pbi-orange); }
+.pbi-meal-tag.dinner { color: var(--pbi-purple); }
+
+.pbi-food-list {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--pbi-text-sub);
+}
+
+.pbi-macro-pill {
+  font-family: monospace;
+  font-weight: 600;
+}
+
+/* ── RESPONSIVENESS ── */
+/* Laptop / smaller desktops: maintain aspect ratio */
+@media (max-width: 1400px) {
+  .pbi-kpi-value { font-size: 1.15rem; }
+  .pbi-header-chip { font-size: 0.7rem; padding: 3px 8px; }
+}
+
+/* Tablet (2-column layout) */
+@media (max-width: 1024px) {
+  .pbi-dashboard-wrapper {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .pbi-row-kpi {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .pbi-row-charts-3, .pbi-bottom-section {
+    flex-direction: column;
+    height: auto;
+  }
+  .pbi-chart-box {
+    min-height: 250px;
+  }
+  .pbi-table-wrapper {
+    overflow-x: auto;
+  }
+}
+
+/* Mobile (Single column layout) */
+@media (max-width: 640px) {
+  .pbi-row-kpi {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .pbi-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

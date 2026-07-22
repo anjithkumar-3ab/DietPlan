@@ -168,6 +168,7 @@ class RecommendationResponse(BaseModel):
     medical_conditions: List[str]
     recommendation_id: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    request_params: Optional[dict] = None
 
 
 class HistoryResponse(BaseModel):

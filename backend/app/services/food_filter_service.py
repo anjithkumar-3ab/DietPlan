@@ -1,7 +1,7 @@
 """
 Food filtering service for dietary restrictions, allergies, and medical conditions.
 
-Provides intelligent, reusable food filtering functions for the NutriAI
+Provides intelligent, reusable food filtering functions for the DietPlan
 recommendation engine. All functions operate on the MongoDB ``foods`` collection
 and return sanitized dictionaries suitable for API responses.
 

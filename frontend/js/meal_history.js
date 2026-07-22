@@ -1,5 +1,5 @@
 /**
- * NutriAI – Meal History Page
+ * DietPlan – Meal History Page
  * Displays previously generated meal plans with pagination.
  */
 

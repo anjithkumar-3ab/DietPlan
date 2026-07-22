@@ -30,7 +30,7 @@ OUTPUT_FILE = os.path.join(
 )
 
 print("=" * 60)
-print("NutriAI Food Dataset Preprocessing")
+print("DietPlan Food Dataset Preprocessing")
 print("=" * 60)
 
 print("\nReading file:")
