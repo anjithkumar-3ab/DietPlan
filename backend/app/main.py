@@ -10,9 +10,14 @@ management, food database queries, and AI-assisted diet plan recommendations.
 from __future__ import annotations
 
 import logging
+import os
+import sys
 import time
 from contextlib import asynccontextmanager
 from typing import Any, Dict
+
+# Ensure backend root directory is in sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
