@@ -344,9 +344,3 @@ Computer Science & Engineering (AI & ML)
 <div align="center">
 
 ### ⭐ If you found this project useful, please consider giving it a Star!
-
-<<<<<<< HEAD
-</div>
-=======
-</div>
->>>>>>> 32bf3cb (ReadME)
