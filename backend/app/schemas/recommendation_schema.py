@@ -28,9 +28,9 @@ class Goal(str, Enum):
 
 
 class FoodPreference(str, Enum):
-    VEGETARIAN = "Vegetarian"
-    NON_VEGETARIAN = "Non-Vegetarian"
-    VEGAN = "Vegan"
+    VEG = "Veg"
+    NON_VEG = "Non-Veg"
+    ANY = "Any"
 
 
 class MealType(str, Enum):
@@ -69,7 +69,7 @@ class RecommendationRequest(BaseModel):
 
     goal: Goal
 
-    food_preference: FoodPreference = FoodPreference.NON_VEGETARIAN
+    food_preference: FoodPreference = FoodPreference.ANY
 
     allergies: List[str] = Field(
         default_factory=list,

@@ -32,9 +32,9 @@ logger = logging.getLogger(__name__)
 
 # Preference-to-MongoDB-query mapping (uses the ``food_preference`` field).
 PREFERENCE_FILTER_MAP: Dict[str, Dict[str, Any]] = {
-    "Vegetarian": {"food_preference": "Vegetarian"},
-    "Non-Vegetarian": {"food_preference": "Non-Vegetarian"},
-    "Vegan": {"food_preference": "Vegan"},
+    "Veg": {"food_preference": {"$in": ["Veg", "Vegetarian"]}},
+    "Non-Veg": {},
+    "Any": {},
 }
 
 # Allergen keywords that may appear in the ``allergens`` field.
@@ -178,14 +178,23 @@ def filter_by_preference(preference: str) -> Dict[str, Any]:
     """Build a MongoDB filter for a dietary preference.
 
     Args:
-        preference: One of ``"Vegetarian"``, ``"Non-Vegetarian"``, or
-            ``"Vegan"``.  Case-insensitive.
+        preference: One of ``"Veg"``, ``"Non-Veg"``, or ``"Any"``. Case-insensitive.
 
     Returns:
-        MongoDB query document.  An empty dict means no restriction (unknown
-        preference defaults to no filter).
+        MongoDB query document. An empty dict means no restriction.
     """
-    key = preference.strip().title()
+    if not preference:
+        return {}
+    key = preference.strip()
+    key_lower = key.lower()
+
+    if key_lower in ["veg", "vegetarian"]:
+        return {"food_preference": {"$in": ["Veg", "Vegetarian"]}}
+    elif key_lower in ["non-veg", "non-vegetarian"]:
+        return {}  # Non-Veg includes both Veg and Non-Veg items
+    elif key_lower == "any":
+        return {}
+
     return PREFERENCE_FILTER_MAP.get(key, {})
 
 
@@ -439,11 +448,11 @@ def get_foods_for_meal_type(
     Args:
         meal_type: ``"Breakfast"``, ``"Lunch"``, ``"Dinner"``, or
             ``"Snack"``.
-        preference: ``"Vegetarian"``, ``"Non-Vegetarian"``, or ``"Vegan"``.
+        preference: ``"Veg"``, ``"Non-Veg"``, or ``"Any"``.
         allergies: Comma-separated allergy string (e.g.
-            ``"Peanut,Milk,Gluten"``).  Pass *None* or ``""`` to skip.
+            ``"Peanut,Milk,Gluten"``). Pass *None* or ``""`` to skip.
         medical_conditions: Comma-separated condition string (e.g.
-            ``"Diabetes,Hypertension"``).  Pass *None* or ``""`` to skip.
+            ``"Diabetes,Hypertension"``). Pass *None* or ``""`` to skip.
         budget: Maximum cost per food item (forward-looking – ignored if
             dataset has no ``cost`` field).
         minimum_calories: Inclusive lower calorie bound.
@@ -499,7 +508,20 @@ def get_foods_for_meal_type(
         )
         return []
 
-    # Shuffle to increase variety across calls.
-    random.shuffle(foods)
+    # Apply recommendation logic based on preference
+    pref_norm = (preference or "").strip().lower()
+    if pref_norm in ["non-veg", "non-vegetarian"]:
+        # Recommend both veg and non-veg, prioritizing non-veg options where available
+        non_veg_foods = [
+            f for f in foods
+            if str(f.get("food_preference", "")).strip().lower() in ["non-veg", "non-vegetarian"]
+        ]
+        veg_foods = [f for f in foods if f not in non_veg_foods]
+        random.shuffle(non_veg_foods)
+        random.shuffle(veg_foods)
+        foods = non_veg_foods + veg_foods
+    else:
+        # Shuffle for Veg and Any
+        random.shuffle(foods)
 
     return foods[:limit]

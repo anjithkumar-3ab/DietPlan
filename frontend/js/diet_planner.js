@@ -79,9 +79,9 @@ async function renderDietPlanner(container) {
             <label for="dp_food_pref">Food Preference *</label>
             <select id="dp_food_pref" required>
               <option value="">Select</option>
-              <option value="Vegetarian">Vegetarian</option>
-              <option value="Non-Vegetarian">Non-Vegetarian</option>
-              <option value="Vegan">Vegan</option>
+              <option value="Veg">Veg</option>
+              <option value="Non-Veg">Non-Veg</option>
+              <option value="Any">Any</option>
             </select>
           </div>
           <div class="form-group">
@@ -117,12 +117,6 @@ async function renderDietPlanner(container) {
         </button>
       </form>
     </div>
-
-    <!-- Dashboard Result Area (hidden until plan is generated) -->
-    <div id="dietDashboard" class="hidden"></div>
-
-    <!-- Plan Result Area (legacy – kept for backward compatibility) -->
-    <div id="planResult"></div>
   `;
 
   initPills('dpAllergyGroup');
@@ -159,7 +153,11 @@ async function generatePlan(event) {
 
   const btn = document.getElementById('planBtn');
   const errorDiv = document.getElementById('planError');
-  const resultDiv = document.getElementById('planResult');
+
+  if (errorDiv) {
+    errorDiv.className = 'hidden';
+    errorDiv.textContent = '';
+  }
 
   btn.disabled = true;
   btn.innerHTML = '<div class="spinner" style="width:22px;height:22px;margin:0;border-width:2px;"></div> Generating...';
@@ -184,42 +182,28 @@ async function generatePlan(event) {
     if (data?.success) {
       showToast('Diet plan generated successfully!', 'success');
 
-      // Hide the form with a smooth transition
-      const formCard = document.getElementById('planFormCard');
-      if (formCard) {
-        formCard.style.transition = 'all 0.4s ease';
-        formCard.style.opacity = '0';
-        formCard.style.transform = 'translateY(-20px)';
-        setTimeout(() => { formCard.style.display = 'none'; }, 400);
-      }
+      // Preserve generated recommendation data for Dashboard
+      window.latestRecommendationData = data;
 
-      // Render the full interactive dashboard directly from the API response
-      const dashboardDiv = document.getElementById('dietDashboard');
-      if (dashboardDiv) {
-        dashboardDiv.classList.remove('hidden');
-        dashboardDiv.style.animation = 'dashFadeIn 0.6s ease forwards';
-        dashboardDiv.innerHTML = '';
-        // Pass the recommendation data directly (no separate API call)
-        renderDashboard(dashboardDiv, data);
-        // Scroll to dashboard
-        setTimeout(() => dashboardDiv.scrollIntoView({ behavior: 'smooth' }), 500);
-      }
-
-      // Also render legacy plan result for backward compatibility
-      renderPlanResult(resultDiv, data);
+      // Programmatically navigate to Dashboard using existing sidebar navigation router
+      navigate('dashboard_page');
     } else {
       throw new Error(data?.message || 'Failed to generate plan');
     }
   } catch (error) {
-    errorDiv.className = 'alert alert-error';
-    errorDiv.classList.remove('hidden');
-    errorDiv.textContent = error.message;
+    if (errorDiv) {
+      errorDiv.className = 'alert alert-error';
+      errorDiv.classList.remove('hidden');
+      errorDiv.textContent = error.message;
+    }
   } finally {
-    btn.disabled = false;
-    btn.innerHTML = `
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-      Generate Diet Plan
-    `;
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Generate Diet Plan
+      `;
+    }
   }
 }
 

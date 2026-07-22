@@ -32,11 +32,9 @@ class HealthProfile(BaseModel):
 
     # ── Food Preferences ──
     food_preference: Literal[
-        "Vegetarian",
-        "Non Vegetarian",
-        "Vegan",
-        "Eggetarian",
-        "Jain",
+        "Veg",
+        "Non-Veg",
+        "Any",
     ]
 
     # ── Allergies (multi-select) ──

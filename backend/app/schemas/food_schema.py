@@ -13,9 +13,9 @@ class Food(BaseModel):
     ]
 
     food_preference: Literal[
-        "Vegetarian",
-        "Non-Vegetarian",
-        "Vegan"
+        "Veg",
+        "Non-Veg",
+        "Any"
     ]
 
     calories: float

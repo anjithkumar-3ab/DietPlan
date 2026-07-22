@@ -635,40 +635,53 @@ async function renderDashboardPage(container) {
   `;
 
   try {
-    const api = await NutriAPI.recommendation;
-    const history = await api.history(1, 0);
-    const recs = history?.recommendations;
+    let rec = window.latestRecommendationData;
 
-    if (!recs || recs.length === 0) {
-      document.getElementById('dashContainer').innerHTML = `
-        <div class="empty-state">
-          <h3>No Dashboard Data Available</h3>
-          <p>Please generate a diet plan first to view your dashboard.</p>
-          <button class="btn btn-primary" onclick="navigate('diet_planner')">Generate Diet Plan</button>
-        </div>`;
-      return;
+    if (!rec) {
+      const api = await NutriAPI.recommendation;
+      const history = await api.history(1, 0);
+      const recs = history?.recommendations;
+
+      if (!recs || recs.length === 0) {
+        const dashEl = document.getElementById('dashContainer');
+        if (dashEl) {
+          dashEl.innerHTML = `
+            <div class="empty-state">
+              <h3>No Dashboard Data Available</h3>
+              <p>Please generate a diet plan first to view your dashboard.</p>
+              <button class="btn btn-primary" onclick="navigate('diet_planner')">Generate Diet Plan</button>
+            </div>`;
+        }
+        return;
+      }
+
+      const recId = recs[0].recommendation_id;
+      const fullData = await api.getById(recId);
+
+      if (!fullData?.recommendation) {
+        throw new Error('Could not load recommendation details');
+      }
+
+      rec = fullData.recommendation;
+      window.latestRecommendationData = rec;
     }
 
-    const recId = recs[0].recommendation_id;
-    const fullData = await api.getById(recId);
-
-    if (!fullData?.recommendation) {
-      throw new Error('Could not load recommendation details');
-    }
-
-    const rec = fullData.recommendation;
     const dashContainer = document.getElementById('dashContainer');
-    dashContainer.className = '';
-    
-    await renderDashboard(dashContainer, rec);
+    if (dashContainer) {
+      dashContainer.className = '';
+      await renderDashboard(dashContainer, rec);
+    }
 
   } catch (error) {
-    document.getElementById('dashContainer').innerHTML = `
-      <div class="empty-state">
-        <h3>Failed to load dashboard</h3>
-        <p>${error.message}</p>
-        <button class="btn btn-primary" onclick="renderDashboardPage(document.getElementById('mainContent'))">Retry</button>
-      </div>`;
+    const dashEl = document.getElementById('dashContainer');
+    if (dashEl) {
+      dashEl.innerHTML = `
+        <div class="empty-state">
+          <h3>Failed to load dashboard</h3>
+          <p>${error.message}</p>
+          <button class="btn btn-primary" onclick="renderDashboardPage(document.getElementById('mainContent'))">Retry</button>
+        </div>`;
+    }
   }
 }
 

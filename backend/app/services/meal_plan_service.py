@@ -450,7 +450,7 @@ def create_daily_meal_plan(
         target_carbs: Daily carbohydrate target (g).
         target_fat: Daily fat target (g).
         weight_kg: User body weight in kg (used for water recommendation).
-        preference: Food preference string (e.g. ``"Vegetarian"``).
+        preference: Food preference string (e.g. ``"Veg"``).
         allergies: List of allergy names, or ``None``.
         medical_conditions: List of medical condition names, or ``None``.
         budget: Optional maximum cost per food item (forward-looking).

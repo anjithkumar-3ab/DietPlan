@@ -82,12 +82,9 @@ The generated recommendations are stored in **MongoDB Atlas** and visualized thr
 
 ### Food Preferences
 
-- Vegetarian
-- Vegan
-- Non-Vegetarian
-- Keto
-- Mediterranean
-- Low-Carb
+- Veg
+- Non-Veg
+- Any
 
 ### Allergies
 

@@ -189,7 +189,7 @@ df["food_name"] = (
 
 df["meal_type"] = "Lunch"
 
-df["food_preference"] = "Vegetarian"
+df["food_preference"] = "Veg"
 
 df["cuisine"] = "International"
 
@@ -321,11 +321,11 @@ for idx, row in df.iterrows():
 
     if any(word in food for word in nonveg_keywords):
 
-        df.at[idx, "food_preference"] = "Non-Vegetarian"
+        df.at[idx, "food_preference"] = "Non-Veg"
 
     else:
 
-        df.at[idx, "food_preference"] = "Vegetarian"
+        df.at[idx, "food_preference"] = "Veg"
 
     # Allergens
 
