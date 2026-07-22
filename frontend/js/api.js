@@ -3,7 +3,9 @@
  * Communicates with the FastAPI backend via Fetch API.
  */
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? (window.location.port === '8000' ? '' : 'http://127.0.0.1:8000')
+  : '';
 
 // ── Generic fetch wrapper ──
 

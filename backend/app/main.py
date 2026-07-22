@@ -22,7 +22,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from pymongo.errors import PyMongoError
 
 from app.database.database import client, db
@@ -292,17 +293,35 @@ def _http_status_phrase(code: int) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Root endpoint
+# Static Files & Root endpoints
 # ---------------------------------------------------------------------------
 
-@app.get("/", include_in_schema=False)
-async def root() -> Dict[str, Any]:
-    """
-    Application root – returns basic metadata.
+FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend"))
+if os.path.exists(FRONTEND_DIR):
+    css_path = os.path.join(FRONTEND_DIR, "css")
+    js_path = os.path.join(FRONTEND_DIR, "js")
+    if os.path.exists(css_path):
+        app.mount("/css", StaticFiles(directory=css_path), name="css")
+    if os.path.exists(js_path):
+        app.mount("/js", StaticFiles(directory=js_path), name="js")
 
-    Returns:
-        dict with application name, version, and status.
-    """
+
+@app.get("/", include_in_schema=False)
+async def root():
+    """Application root – serves frontend web interface or API metadata."""
+    index_file = os.path.join(FRONTEND_DIR, "index.html")
+    if os.path.exists(index_file):
+        return FileResponse(index_file)
+    return {
+        "application": "DietPlan",
+        "version": "1.0.0",
+        "status": "running",
+    }
+
+
+@app.get("/api", tags=["API Metadata"])
+async def api_info() -> Dict[str, Any]:
+    """Return application name, version, and status."""
     return {
         "application": "DietPlan",
         "version": "1.0.0",
