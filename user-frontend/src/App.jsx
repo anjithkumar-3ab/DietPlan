@@ -69,13 +69,23 @@ function PlannerPage() {
   const navigate = useNavigate()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  const account = getAccount()
+  const [account, setAccount] = useState(getAccount())
   const [selectedAllergies, setSelectedAllergies] = useState([])
   const [selectedConditions, setSelectedConditions] = useState([])
   const [form, setForm] = useState({
     age: 25, gender: '', height: 170, weight: 70,
     activity_level: '', goal: '', food_preference: '', meals_per_day: 4,
   })
+
+  useEffect(() => {
+    api('/users/account')
+      .then((data) => {
+        const next = data.account || { name: '' }
+        setAccount(next)
+        localStorage.setItem(ACCOUNT_KEY, JSON.stringify(next))
+      })
+      .catch(() => {})
+  }, [])
 
   const toggle = (value, list, setList) => setList(list.includes(value) ? list.filter((item) => item !== value) : [...list, value])
   const set = (key, value) => setForm((current) => ({ ...current, [key]: value }))
@@ -120,12 +130,10 @@ function PlannerPage() {
         }),
       })
       if (data.success === false) {
-        sessionStorage.setItem('latestDietPlan', JSON.stringify(data.recommendation))
         navigate('/today')
         setError(data.message)
         return
       }
-      sessionStorage.setItem('latestDietPlan', JSON.stringify(data))
       navigate('/dashboard')
     } catch (err) {
       setError(err.message)
@@ -598,7 +606,6 @@ function TodayDietPage() {
         body: JSON.stringify({ meal, checked }),
       })
       setPlan(data.plan)
-      sessionStorage.setItem('latestDietPlan', JSON.stringify(data.plan))
     } catch (err) {
       setError(err.message)
     }
@@ -609,7 +616,6 @@ function TodayDietPage() {
       const data = await api('/users/today/accept', { method: 'PUT' })
       setPlan(data.plan)
       setError('')
-      sessionStorage.setItem('latestDietPlan', JSON.stringify(data.plan))
     } catch (err) {
       setError(err.message)
     }
@@ -637,7 +643,6 @@ function TodayDietPage() {
       })
       setPlan(data)
       setError('')
-      sessionStorage.setItem('latestDietPlan', JSON.stringify(data))
     } catch (err) {
       setError(err.message)
     }
@@ -737,21 +742,45 @@ function ProfilePage() {
   const [name, setName] = useState(account.name || '')
   const [saved, setSaved] = useState('')
 
-  const saveName = (event) => {
+  useEffect(() => {
+    api('/users/account')
+      .then((data) => {
+        const next = data.account || { name: '' }
+        setAccountState(next)
+        setName(next.name || '')
+        localStorage.setItem(ACCOUNT_KEY, JSON.stringify(next))
+      })
+      .catch(() => {})
+  }, [])
+
+  const saveName = async (event) => {
     event.preventDefault()
     const cleanName = name.trim()
     if (!cleanName) return
-    const next = { ...account, name: cleanName }
-    saveAccount(next)
-    setAccountState(next)
-    setSaved('General settings saved.')
+    try {
+      const data = await api('/users/account', {
+        method: 'PUT',
+        body: JSON.stringify({ name: cleanName }),
+      })
+      const next = data.account
+      saveAccount(next)
+      setAccountState(next)
+      setSaved('General settings saved to your account.')
+    } catch (err) {
+      setSaved(err.message)
+    }
   }
 
-  const switchAccount = () => {
-    localStorage.removeItem(ACCOUNT_KEY)
-    setAccountState({})
-    setName('')
-    setSaved('Account switched. Enter a new name in General Settings.')
+  const switchAccount = async () => {
+    try {
+      await api('/users/account', { method: 'DELETE' })
+      localStorage.removeItem(ACCOUNT_KEY)
+      setAccountState({})
+      setName('')
+      setSaved('Account switched. Enter a new name in General Settings.')
+    } catch (err) {
+      setSaved(err.message)
+    }
   }
 
   return (

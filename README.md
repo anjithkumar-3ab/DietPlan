@@ -133,6 +133,16 @@ Existing collections remain in use:
 - `recommendations`
 - `users`
 
+The application persists the following user data in MongoDB:
+
+- Account name and general profile settings
+- Health metrics and profile calculations
+- Generated draft, accepted, and finalized diet plans
+- Meal completion checklists and completion percentages
+- Food records created or updated by administrators
+- User status and role changes
+- Diet plan history and plan dates
+
 Recommendations include:
 
 - `plan_date`

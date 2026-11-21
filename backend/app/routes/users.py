@@ -40,6 +40,47 @@ def update_profile(profile: HealthProfile, current_user: dict = Depends(get_curr
     return save_profile(profile, user_id=current_user["_id"])
 
 
+@router.get("/account")
+def get_account(current_user: dict = Depends(get_current_user)):
+    account = health_profiles_collection.find_one(
+        {"user_id": current_user["_id"]},
+        {"account_name": 1, "full_name": 1},
+    )
+    name = ""
+    if account:
+        name = account.get("account_name") or account.get("full_name") or ""
+    return {"success": True, "account": {"name": name}}
+
+
+@router.put("/account")
+def update_account(payload: dict, current_user: dict = Depends(get_current_user)):
+    name = str(payload.get("name", "")).strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="Account name is required")
+    now = datetime.now(timezone.utc)
+    health_profiles_collection.update_one(
+        {"user_id": current_user["_id"]},
+        {
+            "$set": {"account_name": name, "updated_at": now},
+            "$setOnInsert": {
+                "user_id": current_user["_id"],
+                "created_at": now,
+            },
+        },
+        upsert=True,
+    )
+    return {"success": True, "account": {"name": name}}
+
+
+@router.delete("/account")
+def switch_account(current_user: dict = Depends(get_current_user)):
+    health_profiles_collection.update_one(
+        {"user_id": current_user["_id"]},
+        {"$unset": {"account_name": "", "full_name": ""}},
+    )
+    return {"success": True, "account": {"name": ""}}
+
+
 @router.post("/diet-plan")
 def create_diet_plan(request: RecommendationRequest, current_user: dict = Depends(get_current_user)):
     if not request.name or request.name.strip() in ("", "User"):
