@@ -25,6 +25,11 @@ async function renderDietPlanner(container) {
       </div>
 
       <form id="dietPlanForm" onsubmit="generatePlan(event)">
+        <div class="form-group">
+          <label for="dp_name">Name *</label>
+          <input type="text" id="dp_name" minlength="1" maxlength="100" placeholder="Enter your name" autocomplete="name" required />
+        </div>
+
         <div class="form-row">
           <div class="form-group">
             <label for="dp_age">Age *</label>
@@ -163,6 +168,7 @@ async function generatePlan(event) {
   btn.innerHTML = '<div class="spinner" style="width:22px;height:22px;margin:0;border-width:2px;"></div> Generating...';
 
   const request = {
+    name: document.getElementById('dp_name').value.trim(),
     age: parseInt(document.getElementById('dp_age').value),
     gender: document.getElementById('dp_gender').value,
     height: parseFloat(document.getElementById('dp_height').value),

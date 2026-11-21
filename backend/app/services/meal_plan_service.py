@@ -336,6 +336,20 @@ def _fetch_candidates(
 
     if not foods:
         logger.warning(
+            "No lunch foods for meal_type='%s', trying all available foods",
+            meal_type,
+        )
+        foods = get_foods_for_meal_type(
+            meal_type="Other",
+            preference=preference,
+            allergies=allergies_str,
+            medical_conditions=conditions_str,
+            budget=budget,
+            limit=30,
+        )
+
+    if not foods:
+        logger.warning(
             "No foods available for meal_type='%s' after fallback", meal_type
         )
 

@@ -1,343 +1,149 @@
-<div align="center">
+# DietPlan – Personalized Diet Recommendation System
 
-# 🥗 DietPlan
+DietPlan is a FastAPI and MongoDB application with separate React/Vite portals for users and administrators.
 
-### Personalized Diet Recommendation System
+## Features
 
-A rule-based nutrition recommendation system that generates personalized diet plans based on user health metrics, dietary preferences, allergies, and medical conditions.
+### User Website
+- Dashboard with BMI, BMR, TDEE, calories, and nutrition charts
+- Name and profile settings
+- Personalized diet generation
+- One finalized diet plan per day
+- Today's Diet checklist
+- Calendar-based meal history
+- Draft acceptance and diet regeneration
 
-![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.115-green?logo=fastapi)
-![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green?logo=mongodb)
-![JavaScript](https://img.shields.io/badge/JavaScript-ES6-yellow?logo=javascript)
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white)
-![Plotly](https://img.shields.io/badge/Plotly-Dashboard-blue)
-![PowerBI](https://img.shields.io/badge/PowerBI-Analytics-F2C811?logo=powerbi&logoColor=black)
+### Admin Website
+- Dashboard analytics
+- Registered user management
+- Food database management
+- Diet plan and completion monitoring
+- Local reports and optional Power BI embed
 
-</div>
-
----
-
-# 📖 Overview
-
-DietPlan is a web-based personalized diet recommendation system developed using **FastAPI**, **MongoDB Atlas**, **Plotly**, and **JavaScript**.
-
-The application analyzes user information such as:
-
-- Age
-- Gender
-- Height
-- Weight
-- Activity Level
-- Goal
-- Food Preference
-- Allergies
-- Medical Conditions
-
-Based on these inputs, it calculates:
-
-- BMI
-- BMR
-- TDEE
-- Daily Calories
-- Macronutrients
-
-Finally, it generates a personalized diet plan consisting of:
-
-- 🍳 Breakfast
-- 🍛 Lunch
-- 🍎 Snacks
-- 🍲 Dinner
-
-The generated recommendations are stored in **MongoDB Atlas** and visualized through an interactive Plotly dashboard.
-
----
-
-# ✨ Features
-
-## 🥗 Diet Recommendation
-
-- Personalized meal planning
-- BMI Calculator
-- BMR Calculator
-- TDEE Calculator
-- Daily Calorie Calculator
-- Macronutrient Calculator
-- Water Recommendation
-- Nutrition Score
-
----
-
-## 🍽 Meal Planning
-
-- Breakfast
-- Lunch
-- Snacks
-- Dinner
-
----
-
-## 🔍 Food Filtering
-
-### Food Preferences
-
-- Veg
-- Non-Veg
-- Any
-
-### Allergies
-
-- Dairy
-- Eggs
-- Gluten
-- Peanuts
-- Tree Nuts
-- Soy
-- Shellfish
-- Fish
-- Wheat
-- Corn
-
-### Medical Conditions
-
-- Diabetes
-- Hypertension
-- High Cholesterol
-- Thyroid
-- PCOS
-- Heart Disease
-- Kidney Disease
-- Gout
-- Anemia
-
----
-
-## 📊 Dashboard Features
-
-- BMI Indicator
-- BMR
-- TDEE
-- Daily Calories
-- Water Recommendation
-- Nutrition Score
-- Macronutrient Doughnut Chart
-- BMI Gauge
-- Daily Calories Gauge
-- Meal-wise Calories
-- Nutrition Balance Radar
-- Meal Recommendation Table
-
----
-
-# 🏗️ System Workflow
+## Project Structure
 
 ```text
-User Inputs
-      │
-      ▼
-Health Calculations
-(BMI • BMR • TDEE)
-      │
-      ▼
-Nutrition Calculations
-(Calories • Protein • Carbs • Fat)
-      │
-      ▼
-Rule-Based Recommendation Engine
-      │
-      ▼
-Food Filtering
-(Allergies • Medical Conditions • Food Preference)
-      │
-      ▼
-Personalized Diet Plan
-      │
-      ▼
-MongoDB Atlas
-      │
-      ▼
-Interactive Plotly Dashboard
+DietPlan/
+├── backend/
+│   ├── app/
+│   │   ├── database/
+│   │   ├── dependencies/
+│   │   ├── routes/
+│   │   ├── schemas/
+│   │   └── services/
+│   └── scripts/
+├── user-frontend/
+├── admin-frontend/
+├── frontend/             # Legacy static compatibility frontend
+├── Dataset/
+├── assets/
+├── powerbi/
+├── setup.bat
+├── start.bat
+└── README.md
 ```
 
----
+## Requirements
 
-# 🛠️ Technology Stack
+- Python 3.10 or newer
+- Node.js 18 or newer
+- MongoDB Atlas or local MongoDB
+- Microsoft Power BI Desktop, optional for the `.pbix` report
 
-| Category | Technologies |
-|-----------|--------------|
-| Frontend | HTML5, CSS3, JavaScript |
-| Backend | Python, FastAPI, Pydantic, Uvicorn |
-| Database | MongoDB Atlas, PyMongo |
-| Visualization | Plotly |
-| Analytics | Microsoft Power BI |
-| Data Processing | Pandas |
+## Quick Setup
 
----
+Run:
 
-# 📂 Project Structure
-
-```text
-DietPlan
-│
-├── backend
-│   ├── app
-│   │   ├── database
-│   │   ├── routes
-│   │   ├── schemas
-│   │   ├── services
-│   │   └── main.py
-│   │
-│   └── scripts
-│
-├── frontend
-│   ├── css
-│   ├── js
-│   └── index.html
-│
-├── assets
-│
-├── powerbi
-│   └── Nutri.pbix
-│
-├── PPT
-│
-├── requirements.txt
-├── README.md
-└── start.bat
+```bat
+setup.bat
 ```
 
----
-
-# 🚀 Installation
-
-## Clone Repository
-
-```bash
-git clone https://github.com/YOUR_USERNAME/DietPlan.git
-cd DietPlan
-```
-
----
-
-## Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## Configure Environment
-
-Create a `.env` file inside the `backend` folder.
+Configure `backend/.env`:
 
 ```env
-MONGODB_URI=your_connection_string
-DATABASE_NAME=DietPlan
+MONGODB_URI=your_mongodb_connection_string
+DATABASE_NAME=nutriai
+SECRET_KEY=replace-with-a-long-random-secret
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+DEMO_MODE=true
 ```
 
----
+For local demonstration, keep `DEMO_MODE=true`. Set it to `false` to require JWT authentication and role authorization.
 
-## Start Backend
+## Start the Application
 
-```bash
+Run:
+
+```bat
+start.bat
+```
+
+The launcher opens:
+
+- User Website: http://127.0.0.1:5173
+- Admin Website: http://127.0.0.1:5174
+- Backend API: http://127.0.0.1:8000
+- Swagger: http://127.0.0.1:8000/docs
+
+## Manual Commands
+
+Backend:
+
+```powershell
 cd backend
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
----
+User Website:
 
-## Open Frontend
-
-Open
-
-```
-frontend/index.html
+```powershell
+cd user-frontend
+npm install
+npm run dev -- --host 127.0.0.1 --port 5173
 ```
 
-or run it using **Live Server**.
+Admin Website:
 
----
+```powershell
+cd admin-frontend
+npm install
+npm run dev -- --host 127.0.0.1 --port 5174
+```
 
-# 📸 Application Screenshots
+## Create an Admin Account
 
-## 🥗 Diet Planner
+Set temporary environment variables and run:
 
-![Diet Planner](assets/DietPlaner.png)
+```powershell
+$env:ADMIN_NAME="DietPlan Admin"
+$env:ADMIN_EMAIL="admin@example.com"
+$env:ADMIN_PASSWORD="ChangeMe123!"
+python backend\scripts\create_admin.py
+```
 
----
+Public registration creates only normal `user` accounts. Use the admin script or an existing secure process to create or promote administrators.
 
-## 📊 Plotly Dashboard
+## Database Collections
 
-![Plotly Dashboard](assets/Plotly%20Dashboard.png)
+Existing collections remain in use:
 
----
+- `foods`
+- `health_profiles`
+- `recommendations`
+- `users`
 
-# 📈 Power BI Nutrition Analytics
+Recommendations include:
 
-The repository also includes a standalone **Power BI dashboard** created using an **Excel nutrition dataset** for nutritional analysis.
+- `plan_date`
+- `is_finalized`
+- `is_accepted`
+- `status`
+- `meal_checklist`
+- `completion_percentage`
 
-It contains three dashboards:
+## Power BI
 
-### 📋 Nutrition Overview
+The `powerbi/Nutri.pbix` report can be opened in Microsoft Power BI Desktop. The Admin Reports page also provides a download and live database-based charts.
 
-- Total Foods
-- Average Calories
-- Average Protein
-- Average Fat
-- Average Carbohydrates
-- Average Fiber
-
-![Nutrition Overview](assets/Nutrition%20Overview.png)
-
----
-
-### 💊 Vitamin Analysis
-
-- Vitamin A
-- Vitamin B Complex
-- Vitamin C
-- Vitamin D
-- Vitamin E
-- Vitamin K
-
-![Vitamin Analysis](assets/Vitamin%20Analysis.png)
-
----
-
-### 🍎 Food Insights
-
-- Food Group Analysis
-- Protein Analysis
-- Fat Analysis
-- Dietary Fiber Analysis
-- Calorie Distribution
-
-![Food Insights](assets/Food%20Insights.png)
-
----
-
-# 🔮 Future Enhancements
-
-- User Authentication
-- Weekly Diet Plans
-- Monthly Reports
-- PDF Export
-- Workout Recommendation
-- AI-based Recommendation Engine
-- Mobile Application
-
----
-
-# 👨‍💻 Author
-
-**Bathala Anjith Kumar**
-
-Computer Science & Engineering (AI & ML)
-
----
-
-<div align="center">
-
-### ⭐ If you found this project useful, please consider giving it a Star!
+For a published report, set `VITE_POWERBI_URL` in `admin-frontend/.env` to an approved public or secure embed URL. Do not place credentials or private embed secrets in frontend code.

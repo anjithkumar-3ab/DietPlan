@@ -1,9 +1,10 @@
 from pydantic import BaseModel, Field
-from typing import Literal
+from typing import Literal, Optional
 
 
 class Food(BaseModel):
-    name: str = Field(..., min_length=2)
+    food_name: str = Field(..., min_length=2)
+    name: Optional[str] = None
 
     meal_type: Literal[
         "Breakfast",
@@ -22,3 +23,8 @@ class Food(BaseModel):
     protein: float
     carbohydrates: float
     fat: float
+    fiber: Optional[float] = 0
+    sugar: Optional[float] = 0
+    sodium: Optional[float] = 0
+    allergens: Optional[str] = "None"
+    category: Optional[str] = "General"

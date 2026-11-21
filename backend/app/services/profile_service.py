@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from app.database.database import db
 from app.services.bmi_service import calculate_bmi, ideal_weight_range
 from app.services.bmr_service import (
@@ -11,7 +13,7 @@ from app.services.macro_service import calculate_macros
 profiles = db["health_profiles"]
 
 
-def save_profile(profile):
+def save_profile(profile, user_id=None):
 
     data = profile.model_dump()
 
@@ -71,7 +73,18 @@ def save_profile(profile):
     data["weight_difference"] = weight_diff if profile.target_weight else None
     data["estimated_days_to_goal"] = estimated_days if profile.target_weight else None
 
-    result = profiles.insert_one(data)
+    if user_id:
+        data["user_id"] = user_id
+        data["updated_at"] = datetime.now(timezone.utc)
+        profiles.update_one(
+            {"user_id": user_id},
+            {"$set": data, "$setOnInsert": {"created_at": datetime.now(timezone.utc)}},
+            upsert=True,
+        )
+        profile_id = profiles.find_one({"user_id": user_id})["_id"]
+    else:
+        result = profiles.insert_one(data)
+        profile_id = result.inserted_id
 
     return {
         "success": True,
@@ -81,7 +94,7 @@ def save_profile(profile):
         "bmr": bmr,
         "tdee": tdee,
         "daily_calories": daily_calories,
-        "id": str(result.inserted_id),
+        "id": str(profile_id),
         "protein": macros["protein"],
         "carbohydrates": macros["carbohydrates"],
         "fat": macros["fat"],

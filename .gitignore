@@ -39,4 +39,7 @@ htmlcov/
 
 # Power BI / data exports
 powerbi/data/
-*.csv
+
+# Project-specific generated folders
+Report/
+PPT/

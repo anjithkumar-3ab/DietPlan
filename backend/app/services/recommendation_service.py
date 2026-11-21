@@ -17,7 +17,7 @@ from app.services.meal_plan_service import create_daily_meal_plan
 logger = logging.getLogger(__name__)
 
 
-def generate_diet_plan(request: RecommendationRequest) -> dict:
+def generate_diet_plan(request: RecommendationRequest, user_id: str | None = None) -> dict:
     """
     Generate a complete, personalized diet plan with meal recommendations.
 
@@ -52,6 +52,7 @@ def generate_diet_plan(request: RecommendationRequest) -> dict:
         preference=request.food_preference.value,
         allergies=request.allergies if request.allergies else None,
         medical_conditions=request.medical_conditions if request.medical_conditions else None,
+        meals_per_day=request.meals_per_day,
     )
 
     # Step 3: Build response object
@@ -67,11 +68,13 @@ def generate_diet_plan(request: RecommendationRequest) -> dict:
         "target_carbohydrates": macros["carbohydrates"],
         "target_fat": macros["fat"],
         "daily_plan": daily_plan.model_dump(),
+        "user_name": request.name.strip(),
         "food_preference": request.food_preference.value,
         "allergies": request.allergies,
         "medical_conditions": request.medical_conditions,
         "created_at": datetime.utcnow(),
         "request_params": {
+            "name": request.name.strip(),
             "age": request.age,
             "gender": request.gender.value,
             "height": request.height,
@@ -85,10 +88,13 @@ def generate_diet_plan(request: RecommendationRequest) -> dict:
             "meals_per_day": request.meals_per_day,
         },
     }
+    if user_id:
+        response_data["user_id"] = user_id
 
     # Step 4: Save recommendation to database
     try:
         result = recommendations_collection.insert_one(response_data)
+        response_data.pop("_id", None)
         response_data["recommendation_id"] = str(result.inserted_id)
         logger.info(
             "Recommendation saved with ID: %s", response_data["recommendation_id"]

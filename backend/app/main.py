@@ -31,6 +31,9 @@ from app.routes.dashboard import router as dashboard_router
 from app.routes.food import router as food_router
 from app.routes.profile import router as profile_router
 from app.routes.recommendation import router as recommendation_router
+from app.routes.auth import router as auth_router
+from app.routes.users import router as users_router
+from app.routes.admin import router as admin_router
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -120,6 +123,9 @@ app = FastAPI(
 
 ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Vite dev server (legacy)
+    "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
     "http://localhost:3000",  # Alternate React dev server (legacy)
     "http://localhost:8501",  # Streamlit dev server
     "http://localhost:5500",  # Live Server / static frontend
@@ -366,5 +372,8 @@ app.include_router(dashboard_router)
 app.include_router(profile_router)
 app.include_router(food_router)
 app.include_router(recommendation_router)
+app.include_router(auth_router)
+app.include_router(users_router)
+app.include_router(admin_router)
 
-logger.info("Routers registered: dashboard, profile, food, recommendation")
+logger.info("Routers registered: dashboard, profile, food, recommendation, auth, users, admin")

@@ -47,6 +47,13 @@ class MealType(str, Enum):
 class RecommendationRequest(BaseModel):
     """Request body for generating a personalized diet plan."""
 
+    name: str = Field(
+        default="User",
+        min_length=1,
+        max_length=100,
+        description="User name",
+    )
+
     age: int = Field(..., gt=0, le=120, description="Age in years")
 
     gender: Gender
@@ -163,6 +170,7 @@ class RecommendationResponse(BaseModel):
     target_carbohydrates: float
     target_fat: float
     daily_plan: DailyPlan
+    user_name: str = "User"
     food_preference: FoodPreference
     allergies: List[str]
     medical_conditions: List[str]

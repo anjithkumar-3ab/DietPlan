@@ -119,6 +119,10 @@ function buildDashboardHTML(data) {
 
         <div class="pbi-header-right">
           <div class="pbi-header-chip">
+            <span class="chip-label">Name:</span>
+            <span class="chip-val">${escHtml(userName)}</span>
+          </div>
+          <div class="pbi-header-chip">
             <span class="chip-label">Date:</span>
             <span class="chip-val">${dateStr}</span>
           </div>
@@ -222,19 +226,9 @@ function buildDashboardHTML(data) {
         </div>
       </div>
 
-      <!-- BOTTOM SECTION: LEFT (Meal Bar + Table) | RIGHT (Nutrition Balance Radar) -->
+      <!-- BOTTOM SECTION: Meal Calories and Recommendation Table -->
       <div class="pbi-bottom-section">
-        <!-- LEFT COLUMN (50%) -->
         <div class="pbi-left-col">
-          <!-- Meal-wise Calories -->
-          <div class="pbi-card">
-            <div class="pbi-card-title-bar">
-              <span>Meal-wise Calories</span>
-              <span class="pbi-badge-sm">Plotly Bar</span>
-            </div>
-            <div id="chartMealBar" class="pbi-chart-box"></div>
-          </div>
-
           <!-- Meal Recommendation Table -->
           <div class="pbi-card">
             <div class="pbi-card-title-bar">
@@ -260,17 +254,6 @@ function buildDashboardHTML(data) {
             </div>
           </div>
         </div>
-
-        <!-- RIGHT COLUMN (50%): Nutrition Balance Radar filling full height -->
-        <div class="pbi-right-col">
-          <div class="pbi-card pbi-full-height">
-            <div class="pbi-card-title-bar">
-              <span>Nutrition Balance</span>
-              <span class="pbi-badge-sm">Plotly Radar</span>
-            </div>
-            <div id="chartRadar" class="pbi-chart-box"></div>
-          </div>
-        </div>
       </div>
     </div>
   `;
@@ -288,7 +271,7 @@ function buildMealTableRows(plan) {
   return mealTypes.map(m => {
     const meal = plan[m.key] || {};
     const items = meal.items || [];
-    const foodNames = items.map(i => i.name).filter(Boolean).join(', ') || 'Standard recommended items';
+    const foodNames = items.map(i => i.name).filter(Boolean).join(', ') || 'No matching foods found';
 
     const cals = meal.total_calories || items.reduce((s, i) => s + (i.calories || 0), 0);
     const p = meal.total_protein || items.reduce((s, i) => s + (i.protein || 0), 0);
@@ -342,11 +325,6 @@ function renderAllCharts(data) {
   // 3. Plotly Gauge: Daily Calorie Progress
   renderCalorieGaugeChart('chartCalorieGauge', currentCal, targetCal);
 
-  // 4. Plotly Bar Chart: Meal-wise Calories
-  renderMealBarChart('chartMealBar', bk, lk, sk, dk);
-
-  // 5. Plotly Radar Chart: Nutrition Balance
-  renderRadarChart('chartRadar', p, c, f, fiber, data);
 }
 
 // ── Chart 1: Plotly Doughnut Chart (Macronutrient Split) ──
@@ -363,17 +341,21 @@ function renderDoughnutChart(containerId, p, c, f) {
       colors: [PBI_THEME.colors.protein, PBI_THEME.colors.carbs, PBI_THEME.colors.fat],
       line: { color: '#151b28', width: 2 }
     },
-    textinfo: 'percent+label',
-    textfont: { color: PBI_THEME.text, size: 10, family: PBI_THEME.fontFamily },
+    texttemplate: '<b>%{percent}</b>',
+    textposition: 'inside',
+    textfont: { color: PBI_THEME.text, size: 11, family: PBI_THEME.fontFamily },
     hovertemplate: '<b>%{label}</b><br>%{value:.1f}g (%{percent})<extra></extra>',
-    sort: false
+    sort: false,
+    direction: 'clockwise',
+    domain: { x: [0.12, 0.88], y: [0.08, 0.82] }
   };
 
   const layout = {
     paper_bgcolor: PBI_THEME.bg,
     plot_bgcolor: PBI_THEME.bg,
     font: { color: PBI_THEME.sub, family: PBI_THEME.fontFamily, size: 10 },
-    margin: { l: 15, r: 15, t: 15, b: 25 },
+    margin: { l: 20, r: 20, t: 10, b: 28 },
+    uniformtext: { mode: 'hide', minsize: 10 },
     showlegend: true,
     legend: {
       orientation: 'h',
@@ -402,7 +384,8 @@ function renderBmiGaugeChart(containerId, bmi) {
     value: bmi,
     number: {
       font: { color: PBI_THEME.text, size: 24, family: PBI_THEME.fontFamily },
-      valueformat: '.1f'
+      valueformat: '.1f',
+      suffix: ''
     },
     gauge: {
       axis: {
@@ -413,6 +396,7 @@ function renderBmiGaugeChart(containerId, bmi) {
         tickfont: { color: PBI_THEME.sub, size: 8 }
       },
       bar: { color: bmiColor, thickness: 0.4 },
+      shape: 'angular',
       bgcolor: 'rgba(0,0,0,0)',
       borderwidth: 0,
       steps: [
@@ -428,7 +412,7 @@ function renderBmiGaugeChart(containerId, bmi) {
   const layout = {
     paper_bgcolor: PBI_THEME.bg,
     font: { color: PBI_THEME.sub, family: PBI_THEME.fontFamily, size: 9 },
-    margin: { l: 20, r: 20, t: 25, b: 15 }
+    margin: { l: 28, r: 28, t: 18, b: 8 }
   };
 
   Plotly.newPlot(containerId, [trace], layout, PLOTLY_CONFIG);
@@ -478,126 +462,10 @@ function renderCalorieGaugeChart(containerId, currentCal, targetCal) {
   const layout = {
     paper_bgcolor: PBI_THEME.bg,
     font: { color: PBI_THEME.sub, family: PBI_THEME.fontFamily, size: 9 },
-    margin: { l: 20, r: 20, t: 25, b: 15 }
+    margin: { l: 28, r: 28, t: 18, b: 8 }
   };
 
   Plotly.newPlot(containerId, [trace], layout, PLOTLY_CONFIG);
-}
-
-// ── Chart 4: Plotly Bar Chart (Meal-wise Calories) ──
-function renderMealBarChart(containerId, bk, lk, sk, dk) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-
-  const maxVal = Math.max(bk, lk, sk, dk, 100);
-
-  const trace = {
-    x: ['Breakfast', 'Lunch', 'Snack', 'Dinner'],
-    y: [bk, lk, sk, dk],
-    type: 'bar',
-    cliponaxis: false,
-    marker: {
-      color: [
-        PBI_THEME.colors.carbs,
-        PBI_THEME.colors.green,
-        PBI_THEME.colors.orange,
-        PBI_THEME.colors.purple
-      ],
-      line: { color: '#151b28', width: 1.5 }
-    },
-    text: [bk, lk, sk, dk].map(v => `${Math.round(v)} kcal`),
-    textposition: 'outside',
-    textfont: { color: PBI_THEME.text, size: 10, family: PBI_THEME.fontFamily },
-    hovertemplate: '<b>%{x}</b><br>%{y:.0f} kcal<extra></extra>'
-  };
-
-  const layout = {
-    paper_bgcolor: PBI_THEME.bg,
-    plot_bgcolor: PBI_THEME.bg,
-    font: { color: PBI_THEME.sub, family: PBI_THEME.fontFamily, size: 10 },
-    margin: { l: 35, r: 15, t: 30, b: 25 },
-    xaxis: { color: PBI_THEME.sub, showgrid: false },
-    yaxis: {
-      title: { text: 'kcal', font: { size: 9 } },
-      color: PBI_THEME.sub,
-      gridcolor: PBI_THEME.border,
-      range: [0, maxVal * 1.22]
-    },
-    bargap: 0.35
-  };
-
-  Plotly.newPlot(containerId, [trace], layout, PLOTLY_CONFIG);
-}
-
-// ── Chart 5: Plotly Radar Chart (Nutrition Balance - Full Height) ──
-function renderRadarChart(containerId, p, c, f, fiber, data) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-
-  const targetP = data.target_protein || 120;
-  const targetC = data.target_carbs || 250;
-  const targetF = data.target_fat || 65;
-
-  const categories = ['Protein', 'Carbs', 'Fat', 'Fiber', 'Iron', 'Calcium', 'Vitamin C'];
-  
-  // Calculate % of target reached
-  const values = [
-    Math.min(100, (p / targetP) * 100),
-    Math.min(100, (c / targetC) * 100),
-    Math.min(100, (f / targetF) * 100),
-    Math.min(100, (fiber / 30) * 100),
-    88.0, // Iron %
-    82.0, // Calcium %
-    94.0  // Vit C %
-  ];
-
-  const traceActual = {
-    type: 'scatterpolar',
-    r: values,
-    theta: categories,
-    fill: 'toself',
-    name: 'Actual Intake',
-    line: { color: PBI_THEME.colors.green, width: 2 },
-    fillcolor: 'rgba(16, 185, 129, 0.25)',
-    hovertemplate: '<b>%{theta}</b><br>%{r:.1f}% of Target<extra></extra>'
-  };
-
-  const traceTarget = {
-    type: 'scatterpolar',
-    r: [100, 100, 100, 100, 100, 100, 100],
-    theta: categories,
-    fill: 'toself',
-    name: '100% Target',
-    line: { color: PBI_THEME.sub, width: 1, dash: 'dash' },
-    fillcolor: 'rgba(0,0,0,0)',
-    hovertemplate: '<b>%{theta}</b><br>100% Target<extra></extra>'
-  };
-
-  const layout = {
-    paper_bgcolor: PBI_THEME.bg,
-    font: { color: PBI_THEME.sub, family: PBI_THEME.fontFamily, size: 10 },
-    margin: { l: 45, r: 45, t: 30, b: 30 },
-    showlegend: true,
-    legend: {
-      orientation: 'h',
-      x: 0.5,
-      xanchor: 'center',
-      y: -0.05,
-      font: { color: PBI_THEME.text, size: 10 }
-    },
-    polar: {
-      bgcolor: 'rgba(0,0,0,0)',
-      angularaxis: { color: PBI_THEME.sub, font: { size: 10 } },
-      radialaxis: {
-        range: [0, 115],
-        color: PBI_THEME.sub,
-        ticksuffix: '%',
-        font: { size: 9 }
-      }
-    }
-  };
-
-  Plotly.newPlot(containerId, [traceActual, traceTarget], layout, PLOTLY_CONFIG);
 }
 
 // ── Global window resize listener to keep charts responsive ──
@@ -605,9 +473,7 @@ window.addEventListener('resize', () => {
   const chartIds = [
     'chartMacroDoughnut',
     'chartBmiGauge',
-    'chartCalorieGauge',
-    'chartMealBar',
-    'chartRadar'
+    'chartCalorieGauge'
   ];
   chartIds.forEach(id => {
     const el = document.getElementById(id);

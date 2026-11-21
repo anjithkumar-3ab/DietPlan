@@ -2,6 +2,17 @@ from pathlib import Path
 from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
+import dns.resolver
+
+# Configure DNS resolver to use reliable public DNS servers if system DNS times out on SRV records
+try:
+    resolver = dns.resolver.get_default_resolver()
+    public_dns = ['8.8.8.8', '1.1.1.1', '8.8.4.4', '1.0.0.1']
+    for dns_ip in reversed(public_dns):
+        if dns_ip not in resolver.nameservers:
+            resolver.nameservers.insert(0, dns_ip)
+except Exception:
+    pass
 
 # Load .env from the backend directory (three levels up from this file)
 _env_path = Path(__file__).resolve().parent.parent.parent / ".env"
@@ -25,4 +36,4 @@ try:
     print("✅ MongoDB Connected Successfully!")
 except Exception as e:
     print("❌ MongoDB Connection Failed")
-    print(e)
+    print(e)

@@ -293,23 +293,24 @@
 .pbi-row-charts-3 {
   display: flex;
   gap: 10px;
-  flex: 1;
+  flex: 1.15;
   min-height: 0;
 }
 
 .pbi-col-40 { flex: 4; min-width: 0; }
 .pbi-col-30 { flex: 3; min-width: 0; }
 
-/* ── BOTTOM SECTION: LEFT (Meal Bar + Table) | RIGHT (Nutrition Balance Radar) ── */
+/* ── BOTTOM SECTION: Meal Calories + Recommendation Table ── */
 .pbi-bottom-section {
   display: flex;
   gap: 10px;
-  flex: 2.2;
+  flex: 2;
   min-height: 0;
 }
 
 .pbi-left-col {
-  flex: 1;
+  flex: 1 1 100%;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -323,7 +324,7 @@
 }
 
 .pbi-left-col .pbi-card:last-child {
-  flex: 1.35; /* Give Meal Recommendation Table enough vertical space */
+  flex: 1.5;
   min-height: 0;
 }
 
@@ -344,11 +345,11 @@
 /* ── MEAL RECOMMENDATION TABLE ── */
 .pbi-table-wrapper {
   flex: 1;
-  overflow: hidden; /* Completely remove scrollbars */
-  padding: 2px 6px;
+  overflow: hidden;
+  padding: 8px 10px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .pbi-table {
@@ -371,7 +372,7 @@
 }
 
 .pbi-table td {
-  padding: 4px 6px;
+  padding: 8px 8px;
   border-bottom: 1px solid rgba(35, 45, 66, 0.5);
   color: var(--pbi-text);
   vertical-align: middle;
