@@ -59,7 +59,7 @@ function AdminLogin() {
   return (
     <main className="admin-login">
       <section className="login-card">
-        <div className="admin-logo">A</div>
+        <img className="admin-logo" src="/logo.png" alt="NutriAI" />
         <h1>DietPlan Admin</h1>
         <p>Secure administration portal</p>
         {error && <div className="error-box">{error}</div>}
@@ -96,12 +96,13 @@ function AdminLayout() {
   return (
     <div className="admin-shell">
       <aside className="admin-sidebar">
-        <div className="admin-brand"><div className="admin-logo small">A</div><span>DietPlan Admin</span></div>
+        <div className="admin-brand"><img className="admin-logo small" src="/logo.png" alt="NutriAI" /><span>DietPlan Admin</span></div>
         <nav>
           <button className={active('/dashboard') ? 'active' : ''} onClick={() => navigate('/dashboard')}>Dashboard</button>
           <button className={active('/users') ? 'active' : ''} onClick={() => navigate('/users')}>Users</button>
           <button className={active('/foods') ? 'active' : ''} onClick={() => navigate('/foods')}>Foods</button>
           <button className={active('/plans') ? 'active' : ''} onClick={() => navigate('/plans')}>Diet Plans</button>
+          <button className={active('/calendar') ? 'active' : ''} onClick={() => navigate('/calendar')}>Calendar</button>
           <button className={active('/reports') ? 'active' : ''} onClick={() => navigate('/reports')}>Reports</button>
         </nav>
         <div className="admin-sidebar-user"><strong>{user.name || 'Admin'}</strong><button onClick={logout}>Dashboard</button></div>
@@ -112,6 +113,7 @@ function AdminLayout() {
           <Route path="/users" element={<UsersPage />} />
           <Route path="/foods" element={<FoodsPage />} />
           <Route path="/plans" element={<PlansPage />} />
+          <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
@@ -357,6 +359,222 @@ function PlansPage() {
           })}</tbody>
         </table>
       </section>
+    </div>
+  )
+}
+
+function CalendarPage() {
+  const today = new Date()
+  const [month, setMonth] = useState(new Date(today.getFullYear(), today.getMonth(), 1))
+  const [events, setEvents] = useState([])
+  const [users, setUsers] = useState([])
+  const [selectedDate, setSelectedDate] = useState(today)
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [message, setMessage] = useState('')
+  const [form, setForm] = useState({
+    title: '',
+    description: '',
+    event_type: 'reminder',
+    status: 'scheduled',
+    start_at: `${today.toISOString().slice(0, 10)}T09:00`,
+    end_at: `${today.toISOString().slice(0, 10)}T09:30`,
+    all_day: true,
+    timezone: 'Asia/Kolkata',
+    user_id: '',
+  })
+
+  const dateKey = (date) => {
+    const year = date.getFullYear()
+    const monthNumber = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${monthNumber}-${day}`
+  }
+
+  const load = async () => {
+    const start = new Date(month.getFullYear(), month.getMonth(), 1)
+    const end = new Date(month.getFullYear(), month.getMonth() + 1, 0, 23, 59, 59)
+    try {
+      const [calendarData, usersData] = await Promise.all([
+        api(`/admin/calendar?start=${encodeURIComponent(start.toISOString())}&end=${encodeURIComponent(end.toISOString())}&status=${statusFilter === 'all' ? '' : statusFilter}`),
+        api('/admin/users?limit=100'),
+      ])
+      setEvents(calendarData.events || [])
+      setUsers(usersData.users || [])
+    } catch (err) {
+      setMessage(err.message)
+    }
+  }
+
+  useEffect(() => {
+    load()
+  }, [month, statusFilter])
+
+  const moveMonth = (offset) => setMonth(new Date(month.getFullYear(), month.getMonth() + offset, 1))
+
+  const firstCell = new Date(month.getFullYear(), month.getMonth(), 1)
+  firstCell.setDate(1 - firstCell.getDay())
+  const days = Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(firstCell)
+    date.setDate(firstCell.getDate() + index)
+    return date
+  })
+
+  const eventDateKey = (value) => {
+    if (!value) return ''
+    const date = new Date(value)
+    return Number.isNaN(date.getTime()) ? String(value).slice(0, 10) : dateKey(date)
+  }
+
+  const submit = async (event) => {
+    event.preventDefault()
+    setMessage('')
+    try {
+      await api('/admin/calendar', {
+        method: 'POST',
+        body: JSON.stringify({
+          ...form,
+          start_at: form.all_day ? `${dateKey(selectedDate)}T00:00:00Z` : new Date(form.start_at).toISOString(),
+          end_at: form.all_day ? `${dateKey(selectedDate)}T23:59:59Z` : new Date(form.end_at).toISOString(),
+          user_id: form.user_id || null,
+        }),
+      })
+      setMessage('Calendar event saved.')
+      setForm({ ...form, title: '', description: '' })
+      load()
+    } catch (err) {
+      setMessage(err.message)
+    }
+  }
+
+  const remove = async (calendarEvent) => {
+    if (String(calendarEvent._id).startsWith('plan-')) {
+      setMessage('Diet plan events are managed from Diet Plans.')
+      return
+    }
+    if (!window.confirm(`Cancel "${calendarEvent.title}"?`)) return
+    try {
+      await api(`/admin/calendar/${calendarEvent._id}`, { method: 'DELETE' })
+      setMessage('Calendar event cancelled.')
+      load()
+    } catch (err) {
+      setMessage(err.message)
+    }
+  }
+
+  const selectedKey = dateKey(selectedDate)
+  const selectedEvents = events.filter((item) => eventDateKey(item.start_at) === selectedKey)
+
+  return (
+    <div>
+      <header className="admin-header">
+        <div><p>Schedule</p><h1>Calendar</h1></div>
+        <button className="admin-button compact" onClick={() => {
+          setSelectedDate(today)
+          setForm({ ...form, start_at: `${dateKey(today)}T09:00`, end_at: `${dateKey(today)}T09:30` })
+        }}>Today</button>
+      </header>
+      {message && <div className={message.includes('saved') || message.includes('cancelled') ? 'success-box' : 'error-box'}>{message}</div>}
+
+      <div className="calendar-layout">
+        <section className="admin-panel calendar-main">
+          <div className="calendar-toolbar">
+            <div>
+              <button className="calendar-nav" onClick={() => moveMonth(-1)} aria-label="Previous month">‹</button>
+              <button className="calendar-nav" onClick={() => moveMonth(1)} aria-label="Next month">›</button>
+            </div>
+            <h2>{month.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</h2>
+            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+              <option value="all">All events</option>
+              <option value="scheduled">Scheduled</option>
+              <option value="in_progress">In progress</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+
+          <div className="calendar-weekdays">
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => <span key={day}>{day}</span>)}
+          </div>
+          <div className="calendar-grid">
+            {days.map((day) => {
+              const key = dateKey(day)
+              const dayEvents = events.filter((item) => eventDateKey(item.start_at) === key)
+              const outside = day.getMonth() !== month.getMonth()
+              const isToday = key === dateKey(today)
+              const isSelected = key === selectedKey
+              return (
+                <button
+                  type="button"
+                  key={key}
+                  className={`calendar-day ${outside ? 'outside' : ''} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}`}
+                  onClick={() => setSelectedDate(day)}
+                >
+                  <span className="calendar-date">{day.getDate()}</span>
+                  <div className="calendar-events">
+                    {dayEvents.slice(0, 3).map((item) => (
+                      <span key={item._id} className={`calendar-event ${item.event_type}`}>
+                        {item.title}
+                      </span>
+                    ))}
+                    {dayEvents.length > 3 && <span className="calendar-more">+{dayEvents.length - 3} more</span>}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </section>
+
+        <aside className="calendar-side">
+          <section className="admin-panel">
+            <h2>{selectedDate.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}</h2>
+            <div className="selected-events">
+              {selectedEvents.length ? selectedEvents.map((item) => (
+                <article key={item._id} className={`selected-event ${item.event_type}`}>
+                  <div>
+                    <span className={`calendar-status ${item.status}`}>{item.status}</span>
+                    <strong>{item.title}</strong>
+                    {item.description && <p>{item.description}</p>}
+                    {item.completion && <div className="completion-line"><span style={{ width: `${item.completion.percentage || 0}%` }} /></div>}
+                  </div>
+                  {!String(item._id).startsWith('plan-') && <button className="table-action danger" onClick={() => remove(item)}>Cancel</button>}
+                </article>
+              )) : <div className="empty-day">No events scheduled</div>}
+            </div>
+          </section>
+
+          <section className="admin-panel calendar-form">
+            <h2>Add event</h2>
+            <form onSubmit={submit}>
+              <label>Title<input value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} required /></label>
+              <label>Description<textarea value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} /></label>
+              <div className="calendar-form-grid">
+                <label>Type<select value={form.event_type} onChange={(event) => setForm({ ...form, event_type: event.target.value })}>
+                  <option value="reminder">Reminder</option>
+                  <option value="consultation">Consultation</option>
+                  <option value="follow_up">Follow-up</option>
+                  <option value="diet_plan">Diet plan</option>
+                </select></label>
+                <label>Status<select value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value })}>
+                  <option value="scheduled">Scheduled</option>
+                  <option value="in_progress">In progress</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select></label>
+              </div>
+              <label>User<select value={form.user_id} onChange={(event) => setForm({ ...form, user_id: event.target.value })}>
+                <option value="">All users / no user</option>
+                {users.map((user) => <option key={user._id} value={user._id}>{user.name}</option>)}
+              </select></label>
+              <label className="calendar-check"><input type="checkbox" checked={form.all_day} onChange={(event) => setForm({ ...form, all_day: event.target.checked })} /> All day</label>
+              {!form.all_day && <div className="calendar-form-grid">
+                <label>Starts<input type="datetime-local" value={form.start_at} onChange={(event) => setForm({ ...form, start_at: event.target.value })} required /></label>
+                <label>Ends<input type="datetime-local" value={form.end_at} onChange={(event) => setForm({ ...form, end_at: event.target.value })} required /></label>
+              </div>}
+              <button className="admin-button" type="submit">Save event</button>
+            </form>
+          </section>
+        </aside>
+      </div>
     </div>
   )
 }

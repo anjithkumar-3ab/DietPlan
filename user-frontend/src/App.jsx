@@ -38,7 +38,7 @@ function Sidebar() {
     <>
       <aside className={`dp-sidebar ${open ? 'open' : ''}`}>
         <div className="dp-brand">
-          <span className="dp-cup">☕</span>
+          <img className="dp-logo" src="/logo.png" alt="NutriAI" />
           <span>DietPlan</span>
         </div>
         <div className="dp-nav-section">MAIN MENU</div>
