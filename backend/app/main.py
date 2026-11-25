@@ -22,8 +22,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 from pymongo.errors import PyMongoError
 
 from app.database.database import client, db
@@ -128,13 +127,7 @@ ALLOWED_ORIGINS = [
     "http://127.0.0.1:5174",
     "http://localhost:3000",  # Alternate React dev server (legacy)
     "http://localhost:8501",  # Streamlit dev server
-    "http://localhost:5500",  # Live Server / static frontend
-    "http://localhost:8080",  # Alternative static server
-    "http://localhost:8001",  # Static file server
-    "http://127.0.0.1:5500",
-    "http://127.0.0.1:8080",
     "http://127.0.0.1:3000",
-    "http://127.0.0.1:8001",
 ]
 
 app.add_middleware(
@@ -298,26 +291,9 @@ def _http_status_phrase(code: int) -> str:
         return "Unknown Error"
 
 
-# ---------------------------------------------------------------------------
-# Static Files & Root endpoints
-# ---------------------------------------------------------------------------
-
-FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend"))
-if os.path.exists(FRONTEND_DIR):
-    css_path = os.path.join(FRONTEND_DIR, "css")
-    js_path = os.path.join(FRONTEND_DIR, "js")
-    if os.path.exists(css_path):
-        app.mount("/css", StaticFiles(directory=css_path), name="css")
-    if os.path.exists(js_path):
-        app.mount("/js", StaticFiles(directory=js_path), name="js")
-
-
 @app.get("/", include_in_schema=False)
 async def root():
-    """Application root – serves frontend web interface or API metadata."""
-    index_file = os.path.join(FRONTEND_DIR, "index.html")
-    if os.path.exists(index_file):
-        return FileResponse(index_file)
+    """Return application metadata."""
     return {
         "application": "DietPlan",
         "version": "1.0.0",

@@ -61,7 +61,6 @@ NutriAI is a web application for creating and tracking personalized daily meal p
 │   └── requirements.txt
 ├── user-frontend/          # React + Vite user application
 ├── admin-frontend/         # React + Vite admin application
-├── frontend/               # Static/legacy frontend served by the API
 ├── Dataset/                # Food.csv and Food.xlsx source data
 ├── assets/                 # Screenshots used in this README
 ├── Logo/                   # Project logo
