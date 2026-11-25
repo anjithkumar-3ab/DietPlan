@@ -42,6 +42,39 @@ input,select { width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:10p
 .toolbar button { border:1px solid var(--line);background:white;color:var(--navy);border-radius:8px;padding:0 18px;font-weight:700; }
 .plan-toolbar { max-width:none; }
 .plan-toolbar select { width:180px; }
+.plan-row { cursor:pointer; }
+.plan-row:hover { background:#f7faf8; }
+.plan-row:focus-visible { outline:2px solid #2f7d67;outline-offset:-2px; }
+.plan-modal-backdrop {
+  position:fixed;inset:0;z-index:1000;background:rgba(15,37,31,.55);
+  display:grid;place-items:center;padding:20px;
+}
+.plan-modal {
+  width:min(820px,100%);max-height:min(88vh,900px);overflow:auto;
+  background:white;border:1px solid var(--line);border-radius:16px;padding:22px;
+  box-shadow:0 24px 70px rgba(15,37,31,.28);
+}
+.plan-modal-header { display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px; }
+.plan-modal-header p { margin:0 0 4px;color:var(--muted);font-size:.76rem;text-transform:uppercase;letter-spacing:.08em;font-weight:800; }
+.plan-modal-header h2 { margin:0;color:var(--navy); }
+.plan-modal-close { flex:0 0 auto;width:36px;height:36px;border:1px solid var(--line);border-radius:50%;background:white;color:var(--ink);font-size:1.5rem;line-height:1; }
+.plan-detail-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px; }
+.plan-detail-grid article,.plan-detail-macros span { display:flex;flex-direction:column;gap:4px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fbfdfb; }
+.plan-detail-grid span,.plan-detail-macros span { color:var(--muted);font-size:.76rem;font-weight:700; }
+.plan-detail-grid strong { color:var(--ink);font-size:.92rem;text-transform:capitalize; }
+.plan-detail-macros { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px; }
+.plan-detail-macros strong { color:var(--ink);font-size:.88rem; }
+.plan-meal-list { display:grid;gap:10px; }
+.plan-meal-card { padding:14px;border:1px solid var(--line);border-radius:10px; }
+.plan-meal-heading { display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px; }
+.plan-meal-heading h3 { margin:0;color:var(--navy);font-size:1rem; }
+.plan-meal-heading>strong { color:#236449;font-size:.88rem; }
+.plan-meal-card ul { list-style:none;padding:0;margin:0; }
+.plan-meal-card li { display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-top:1px solid #edf2ef;font-size:.83rem;color:var(--muted); }
+.plan-meal-card li>span:first-child { display:flex;flex-direction:column;gap:2px; }
+.plan-meal-card li strong { color:var(--ink); }
+.plan-meal-card li small { color:var(--muted); }
+.plan-meal-empty { margin:0;color:var(--muted);font-size:.88rem; }
 .table-panel { overflow:auto;padding:0; }
 table { width:100%;border-collapse:collapse;min-width:720px; }
 th,td { text-align:left;padding:12px 14px;border-bottom:1px solid #edf2f7; }
@@ -69,6 +102,7 @@ td { color:#334155;font-size:.88rem; }
 .report-summary-grid strong { color:var(--navy);font-size:1.8rem;margin-top:8px; }
 @media(max-width:1100px){ .stat-grid{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:repeat(2,1fr)} }
 @media(max-width:800px){ .admin-shell{grid-template-columns:1fr}.admin-sidebar{position:relative;height:auto}.admin-sidebar nav{flex-direction:row;flex-wrap:wrap}.admin-sidebar-user{margin-top:10px}.admin-content{padding:20px}.stat-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.powerbi-panel{height:420px} }
+@media(max-width:640px){ .plan-modal{padding:16px}.plan-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.plan-detail-macros{grid-template-columns:repeat(2,minmax(0,1fr))}.plan-meal-card li{flex-direction:column;gap:4px} }
 
 /* NutriAI refreshed theme */
 .admin-shell {

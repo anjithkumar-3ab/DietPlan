@@ -143,7 +143,12 @@ function AdminDashboard() {
     ['Administrators', stats.admin_count],
   ] : []
 
-  const chartData = cards.slice(0, 4).map(([name, value]) => ({ name: name.replace('Registered ', ''), value }))
+  const registeredUsers = Number(stats?.total_users || 0)
+  const activeUsers = Number(stats?.active_users || 0)
+  const userActivityData = [
+    { name: 'Active users', value: activeUsers },
+    { name: 'Inactive users', value: Math.max(registeredUsers - activeUsers, 0) },
+  ]
 
   return (
     <div>
@@ -153,17 +158,21 @@ function AdminDashboard() {
         {cards.map(([label, value]) => <article key={label}><span>{label}</span><strong>{value ?? 0}</strong></article>)}
       </div>
       <section className="admin-panel chart-panel">
-        <h2>Platform overview</h2>
+        <h2>User activity</h2>
         <div className="chart-wrap">
           {stats ? (
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={chartData}>
-                <XAxis dataKey="name" />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="value" fill="#2563eb" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            registeredUsers > 0 ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Pie data={userActivityData} dataKey="value" nameKey="name" innerRadius={68} outerRadius={100} paddingAngle={3}>
+                    <Cell fill="#2f7d67" />
+                    <Cell fill="#d7e1da" />
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : <div className="empty-chart">No users to show yet.</div>
           ) : <div className="empty-chart">Loading analytics...</div>}
         </div>
       </section>
@@ -308,6 +317,7 @@ function PlansPage() {
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [selectedPlan, setSelectedPlan] = useState(null)
 
   useEffect(() => {
     api('/admin/recommendations?limit=100')
@@ -325,6 +335,16 @@ function PlansPage() {
     const matchesStatus = statusFilter === 'all' || status === statusFilter
     return matchesSearch && matchesStatus
   })
+
+  const closeDetails = () => setSelectedPlan(null)
+  const selectedDiet = selectedPlan?.daily_plan
+  const mealDetails = [
+    ['breakfast', 'Breakfast'],
+    ['lunch', 'Lunch'],
+    ['dinner', 'Dinner'],
+    ['snacks', 'Snacks'],
+  ]
+
   return (
     <div>
       <header className="admin-header"><div><p>Recommendation management</p><h1>Diet Plans</h1></div></header>
@@ -344,9 +364,23 @@ function PlansPage() {
             const checklist = plan.meal_checklist || {}
             const taken = Object.values(checklist).filter(Boolean).length
             const status = plan.status || (plan.is_accepted ? 'accepted' : plan.is_finalized ? 'finalized' : 'draft')
+            const userName = plan.user_name || plan.request_params?.name || 'Unowned'
             return (
-              <tr key={plan._id}>
-                <td>{plan.user_name || plan.request_params?.name || 'Unowned'}</td>
+              <tr
+                key={plan._id}
+                className="plan-row"
+                role="button"
+                tabIndex={0}
+                aria-label={`View diet details for ${userName}`}
+                onClick={() => setSelectedPlan(plan)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    setSelectedPlan(plan)
+                  }
+                }}
+              >
+                <td>{userName}</td>
                 <td>{plan.plan_date || (plan.created_at instanceof Date && !Number.isNaN(plan.created_at) ? plan.created_at.toISOString().slice(0, 10) : '—')}</td>
                 <td>{Number(plan.daily_calories || 0).toFixed(0)} kcal</td>
                 <td>{Number(plan.bmi || 0).toFixed(1)}</td>
@@ -359,12 +393,78 @@ function PlansPage() {
           })}</tbody>
         </table>
       </section>
+      {selectedPlan && (
+        <div
+          className="plan-modal-backdrop"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) closeDetails()
+          }}
+        >
+          <section className="plan-modal" role="dialog" aria-modal="true" aria-labelledby="plan-modal-title">
+            <header className="plan-modal-header">
+              <div>
+                <p>Diet plan details</p>
+                <h2 id="plan-modal-title">{selectedPlan.user_name || selectedPlan.request_params?.name || 'Personalized diet plan'}</h2>
+              </div>
+              <button type="button" className="plan-modal-close" onClick={closeDetails} aria-label="Close diet details">×</button>
+            </header>
+            <div className="plan-detail-grid">
+              <article><span>Plan date</span><strong>{selectedPlan.plan_date || '—'}</strong></article>
+              <article><span>Status</span><strong>{selectedPlan.status || (selectedPlan.is_accepted ? 'accepted' : selectedPlan.is_finalized ? 'finalized' : 'draft')}</strong></article>
+              <article><span>Daily calories</span><strong>{Number(selectedPlan.daily_calories || selectedDiet?.target_daily_calories || 0).toFixed(0)} kcal</strong></article>
+              <article><span>BMI</span><strong>{Number(selectedPlan.bmi || 0).toFixed(1)}{selectedPlan.bmi_category ? ` · ${selectedPlan.bmi_category}` : ''}</strong></article>
+              <article><span>Preference</span><strong>{selectedPlan.food_preference || '—'}</strong></article>
+              <article><span>Goal</span><strong>{selectedPlan.request_params?.goal || '—'}</strong></article>
+            </div>
+            {selectedDiet ? (
+              <>
+                <div className="plan-detail-macros">
+                  <span>Protein <strong>{Number(selectedDiet.total_protein || 0).toFixed(1)} / {Number(selectedDiet.target_protein || selectedPlan.target_protein || 0).toFixed(1)} g</strong></span>
+                  <span>Carbs <strong>{Number(selectedDiet.total_carbohydrates || 0).toFixed(1)} / {Number(selectedDiet.target_carbohydrates || selectedPlan.target_carbohydrates || 0).toFixed(1)} g</strong></span>
+                  <span>Fat <strong>{Number(selectedDiet.total_fat || 0).toFixed(1)} / {Number(selectedDiet.target_fat || selectedPlan.target_fat || 0).toFixed(1)} g</strong></span>
+                  <span>Water <strong>{Number(selectedDiet.recommended_water_liters || 0).toFixed(1)} L</strong></span>
+                </div>
+                <div className="plan-meal-list">
+                  {mealDetails.map(([key, label]) => {
+                    const meal = selectedDiet[key]
+                    return (
+                      <article className="plan-meal-card" key={key}>
+                        <div className="plan-meal-heading">
+                          <h3>{label}</h3>
+                          <strong>{Number(meal?.total_calories || 0).toFixed(0)} kcal</strong>
+                        </div>
+                        {meal?.items?.length ? (
+                          <ul>
+                            {meal.items.map((item, index) => (
+                              <li key={`${item.food_id || item.name}-${index}`}>
+                                <span><strong>{item.name}</strong>{item.quantity && <small>{item.quantity}</small>}</span>
+                                <span>{Number(item.calories || 0).toFixed(0)} kcal · P {Number(item.protein || 0).toFixed(1)}g · C {Number(item.carbohydrates || 0).toFixed(1)}g · F {Number(item.fat || 0).toFixed(1)}g</span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : <p className="plan-meal-empty">No food items listed.</p>}
+                      </article>
+                    )
+                  })}
+                </div>
+              </>
+            ) : <p className="plan-meal-empty">Detailed meals are not available for this plan.</p>}
+          </section>
+        </div>
+      )}
     </div>
   )
 }
 
+function formatDateKey(date) {
+  const year = date.getFullYear()
+  const monthNumber = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${monthNumber}-${day}`
+}
+
 function CalendarPage() {
-  const today = new Date()
+  const [today, setToday] = useState(() => new Date())
   const [month, setMonth] = useState(new Date(today.getFullYear(), today.getMonth(), 1))
   const [events, setEvents] = useState([])
   const [users, setUsers] = useState([])
@@ -376,18 +476,15 @@ function CalendarPage() {
     description: '',
     event_type: 'reminder',
     status: 'scheduled',
-    start_at: `${today.toISOString().slice(0, 10)}T09:00`,
-    end_at: `${today.toISOString().slice(0, 10)}T09:30`,
+    start_at: `${formatDateKey(today)}T09:00`,
+    end_at: `${formatDateKey(today)}T09:30`,
     all_day: true,
     timezone: 'Asia/Kolkata',
     user_id: '',
   })
 
   const dateKey = (date) => {
-    const year = date.getFullYear()
-    const monthNumber = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    return `${year}-${monthNumber}-${day}`
+    return formatDateKey(date)
   }
 
   const load = async () => {
@@ -408,6 +505,29 @@ function CalendarPage() {
   useEffect(() => {
     load()
   }, [month, statusFilter])
+
+  useEffect(() => {
+    const refreshToday = () => {
+      const currentDate = new Date()
+      if (formatDateKey(currentDate) !== formatDateKey(today)) {
+        setToday(currentDate)
+        setMonth(new Date(currentDate.getFullYear(), currentDate.getMonth(), 1))
+        setSelectedDate(currentDate)
+        setForm((currentForm) => ({
+          ...currentForm,
+          start_at: `${formatDateKey(currentDate)}T09:00`,
+          end_at: `${formatDateKey(currentDate)}T09:30`,
+        }))
+      }
+    }
+
+    const intervalId = window.setInterval(refreshToday, 60_000)
+    document.addEventListener('visibilitychange', refreshToday)
+    return () => {
+      window.clearInterval(intervalId)
+      document.removeEventListener('visibilitychange', refreshToday)
+    }
+  }, [today])
 
   const moveMonth = (offset) => setMonth(new Date(month.getFullYear(), month.getMonth() + offset, 1))
 
@@ -613,9 +733,13 @@ function ReportsPage() {
     value: plans.filter((plan) => (plan.food_preference || 'Any') === preference).length,
   })).filter((item) => item.value > 0)
 
-  const mealData = ['Breakfast', 'Lunch', 'Dinner', 'Snack'].map((meal) => ({
-    name: meal,
-    value: foods.filter((food) => food.meal_type === meal).length,
+  const nutritionData = [
+    { name: 'Protein', value: foods.reduce((total, food) => total + Number(food.protein || 0), 0) },
+    { name: 'Carbs', value: foods.reduce((total, food) => total + Number(food.carbohydrates || 0), 0) },
+    { name: 'Fat', value: foods.reduce((total, food) => total + Number(food.fat || 0), 0) },
+  ].map((item) => ({
+    ...item,
+    value: foods.length ? item.value / foods.length : 0,
   }))
 
   const statusColors = ['#16a34a', '#f59e0b', '#2563eb']
@@ -674,16 +798,18 @@ function ReportsPage() {
         </section>
 
         <section className="admin-panel report-card wide">
-          <h2>Foods by Meal Type</h2>
+          <h2>Average Nutrition per Food</h2>
           <div className="report-chart">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={mealData}>
-                <XAxis dataKey="name" />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="value" name="Food Records" fill="#2563eb" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            {foods.length ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={nutritionData}>
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip formatter={(value) => [`${Number(value).toFixed(1)} g`, 'Average per item']} />
+                  <Bar dataKey="value" name="Average per item" fill="#2f7d67" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : <div className="empty-chart">No food data available</div>}
           </div>
         </section>
       </div>
