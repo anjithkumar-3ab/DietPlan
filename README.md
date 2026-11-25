@@ -4,8 +4,6 @@
 
 NutriAI is a web application for creating and tracking personalized daily meal plans. It combines a FastAPI backend, MongoDB persistence, and separate React interfaces for users and administrators. Its scoring-based meal planner selects foods from the project dataset and considers nutrition targets, food preferences, allergies, and supported medical-condition adjustments.
 
-> **Health notice:** NutriAI is an informational planning tool, not medical advice or a substitute for care from a qualified health professional. Recommendations and food data should be reviewed before use, especially when allergies or medical conditions are involved.
-
 ## At a glance
 
 - **User portal:** profile and health metrics, nutrition dashboard, diet-plan generation, today's meals, completion checklist, and meal history.
@@ -30,9 +28,9 @@ NutriAI is a web application for creating and tracking personalized daily meal p
 | --- | --- |
 | ![Nutrition overview](assets/Nutrition%20Overview.png) | ![Food insights](assets/Food%20Insights.png) |
 
-| Vitamin analysis | Additional dashboard |
+| Vitamin analysis | MDB |
 | --- | --- |
-| ![Vitamin analysis](assets/Vitamin%20Analysis.png) | ![MDB dashboard](assets/MDB.png) |
+| ![Vitamin analysis](assets/Vitamin%20Analysis.png) | ![MDB](assets/MDB.png) |
 
 ### Admin portal
 
@@ -78,7 +76,7 @@ NutriAI is a web application for creating and tracking personalized daily meal p
 - **Backend:** Python 3.10+, FastAPI, Pydantic, Uvicorn, PyMongo, and JWT/bcrypt authentication.
 - **Frontend:** React, React Router, Vite, and Recharts.
 - **Database:** MongoDB (local or MongoDB Atlas).
-- **Analytics:** Power BI Desktop can open the included `.pbix` report.
+- **Reports:** Power BI report included at `powerbi/Nutri.pbix`.
 
 The meal-planning service uses calorie and macro targets to score candidate foods. It filters candidates by meal type, preference, allergy, and supported condition rules, then selects the best-scoring options. BMI, BMR, TDEE, calorie goals, macro targets, and a water-intake estimate are also calculated by backend services.
 
@@ -87,7 +85,7 @@ The meal-planning service uses calorie and macro targets to score candidate food
 ### Requirements
 
 - Python 3.10 or later
-- Node.js and npm compatible with the Vite version in the frontend package files
+- Node.js and npm
 - A reachable MongoDB instance (MongoDB Atlas or local MongoDB)
 
 ### 1. Install dependencies
@@ -115,7 +113,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES=60
 DEMO_MODE=true
 ```
 
-For Atlas, use the connection URI from your Atlas cluster instead of the local URI. Keep credentials and real secrets out of source control.
+For Atlas, use the connection URI from your Atlas cluster instead of the local URI.
 
 The frontend environment examples point at the local API:
 
@@ -123,9 +121,9 @@ The frontend environment examples point at the local API:
 VITE_API_BASE_URL=http://127.0.0.1:8000
 ```
 
-The admin portal also supports `VITE_DEMO_MODE` and an optional `VITE_POWERBI_URL` for an approved Power BI embed URL. Do not put private embed tokens or credentials in frontend environment variables.
+The admin portal also supports `VITE_DEMO_MODE` and the optional `VITE_POWERBI_URL` setting for a Power BI report embed.
 
-> **Demo mode:** `DEMO_MODE=true` bypasses normal backend authentication and supplies demo user/admin identities. Use it only for local demonstrations; set it to `false` and configure a strong secret for authenticated use. The frontend demo setting does not replace backend authentication.
+`DEMO_MODE=true` supplies demo user/admin identities. Set it to `false` to use the backend's JWT authentication and role checks.
 
 ### 3. Start the application
 
@@ -184,7 +182,7 @@ $env:ADMIN_PASSWORD = "use-a-unique-password"
 python backend\scripts\create_admin.py
 ```
 
-The script prompts for any values not supplied as environment variables. Use a password of at least eight characters. Public registration creates normal user accounts; do not make an account an administrator by changing client-side settings.
+The script prompts for any values not supplied as environment variables. Passwords must be at least eight characters. Public registration creates normal user accounts.
 
 ## Main capabilities
 
@@ -233,26 +231,3 @@ Interactive API documentation is available at `/docs` while the backend is runni
 - Open `powerbi/Nutri.pbix` using Microsoft Power BI Desktop.
 - The admin portal can display a Power BI report when `VITE_POWERBI_URL` is configured with an approved embed URL.
 - `PPT/DietPlan-System-Architecture.pptx` contains the system architecture presentation.
-
-## Development checks
-
-Build either frontend from its directory:
-
-```powershell
-npm run build
-```
-
-Lint either frontend:
-
-```powershell
-npm run lint
-```
-
-Backend dependencies and test tooling are listed in `backend/requirements.txt`; run the checks appropriate to your local environment.
-
-## Security and privacy
-
-- Never commit `.env` files, database credentials, JWT secrets, or private embed tokens.
-- Disable demo mode and use a strong unique `SECRET_KEY` before exposing the API beyond a local demo.
-- Configure MongoDB network access and user permissions appropriately.
-- Food and nutrition recommendations are informational and may not be suitable for an individual's clinical needs.
