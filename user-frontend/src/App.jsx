@@ -289,7 +289,6 @@ function DashboardPage() {
             <span>Date: <strong>{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</strong></span>
             <span>Goal: <strong className="goal-value">{plan?.request_params?.goal || 'Weight Loss'}</strong></span>
             <b className="dashboard-bmi-badge">{plan?.bmi_category || 'NORMAL WEIGHT'}</b>
-            <button className="dashboard-export" onClick={() => window.print()}>▣ Export</button>
           </div>
         }
       />
